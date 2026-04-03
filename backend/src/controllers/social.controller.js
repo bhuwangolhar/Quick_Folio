@@ -35,3 +35,16 @@ exports.deleteSocial = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.updateSocial = async (req, res) => {
+  try {
+    const social = await Social.findByPk(req.params.id);
+    if (!social) {
+      return res.status(404).json({ message: "Social not found" });
+    }
+    await social.update(req.body);
+    res.json(social);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

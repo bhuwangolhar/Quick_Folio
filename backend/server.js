@@ -12,6 +12,10 @@ const profileRoutes = require("./src/routes/profile.routes");
 const projectRoutes = require("./src/routes/project.routes");
 const skillRoutes = require("./src/routes/skill.routes");
 const socialRoutes = require("./src/routes/social.routes");
+const aboutRoutes = require("./src/routes/about.routes");
+const experienceRoutes = require("./src/routes/experience.routes");
+const certificationRoutes = require("./src/routes/certification.routes");
+const educationRoutes = require("./src/routes/education.routes");
 
 const app = express();
 
@@ -24,6 +28,10 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/socials", socialRoutes);
+app.use("/api/about", aboutRoutes);
+app.use("/api/experiences", experienceRoutes);
+app.use("/api/certifications", certificationRoutes);
+app.use("/api/education", educationRoutes);
 
 // 🔹 Health check route (important for production mindset)
 app.get("/", (req, res) => {

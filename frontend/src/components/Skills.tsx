@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
-import { fetchSkills } from "../services/api";
+import { fetchSkills, createSkill, updateSkill, deleteSkill, resetSkills } from "../services/api";
+import type { Skill } from "../services/api";
 import { ErrorBlock } from "./Loader";
 
 function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
@@ -25,10 +26,74 @@ function getLevel(level: string) {
   return LEVEL_CONFIG[key] ?? { pct: 50, label: level, color: "from-gray-500 to-gray-400" };
 }
 
-export default function Skills() {
+export default function Skills({ adminMode = false }: { adminMode?: boolean }) {
   const { data: skills, loading, error } = useFetch(fetchSkills);
   const sectionRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef as React.RefObject<Element>);
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editData, setEditData] = useState<Partial<Skill>>({});
+  const [status, setStatus] = useState<string>("");
+
+  const handleEdit = (skill: Skill) => {
+    setEditingId(skill.id);
+    setEditData(skill);
+  };
+
+  const handleSave = async (id: number) => {
+    try {
+      await updateSkill(id, editData);
+      setStatus("Skill saved!");
+      setEditingId(null);
+      window.location.reload();
+    } catch (e: any) {
+      setStatus(`Save failed: ${e.message || "Unknown error"}`);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditData({});
+    setStatus("");
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Delete this skill?")) return;
+    try {
+      await deleteSkill(id);
+      setStatus("Skill deleted!");
+      window.location.reload();
+    } catch (e: any) {
+      setStatus(`Delete failed: ${e.message || "Unknown error"}`);
+    }
+  };
+
+  const handleAddNew = async () => {
+    try {
+      const newSkill: Omit<Skill, "id"> = {
+        name: "New Skill",
+        description: "Skill description here...",
+        icon: "💡",
+        tools: "Tool 1, Tool 2, Tool 3"
+      };
+      await createSkill(newSkill);
+      setStatus("Skill added!");
+      window.location.reload();
+    } catch (e: any) {
+      setStatus(`Failed to add skill: ${e.message}`);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("Reset to 6 default skills? This will delete all existing skills!")) return;
+    try {
+      await resetSkills();
+      setStatus("Skills reset!");
+      window.location.reload();
+    } catch (e: any) {
+      setStatus(`Reset failed: ${e.message}`);
+    }
+  };
 
   return (
     <section id="skills" className="relative py-32 bg-[#060a10] overflow-hidden">
@@ -44,73 +109,69 @@ export default function Skills() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6" ref={sectionRef}>
+      <div className="max-w-[1600px] mx-auto px-8" ref={sectionRef}>
         {/* Header */}
         <div
-          className={`mb-20 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          className={`mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-8 h-px bg-amber-400" />
-            <span className="text-xs font-mono tracking-[0.25em] uppercase text-amber-400">Expertise</span>
+            <div className="w-8 h-px bg-violet-400" />
+            <span className="text-xs font-mono tracking-[0.25em] uppercase text-violet-400">Expertise</span>
           </div>
-          <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-white">Skills</h2>
+          <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-white">
+            Tools of the trade
+          </h2>
           <p className="mt-4 text-gray-500 font-light max-w-md">
-            Tools and technologies I use to bring ideas to life.
+            A full-stack AI & business analytics toolkit from research to deployment.
           </p>
         </div>
 
+        {/* Admin controls */}
+        {adminMode && (
+          <div className="mb-8 flex gap-3">
+            <button
+              onClick={handleAddNew}
+              className="px-6 py-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 transition-all duration-300 font-medium"
+            >
+              + Add New Skill
+            </button>
+            <button
+              onClick={handleReset}
+              className="px-6 py-2.5 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-300 hover:bg-orange-500/20 transition-all duration-300 font-medium"
+            >
+              Reset to 6 Defaults
+            </button>
+            {status && (
+              <div className="flex items-center px-4 py-2 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm">
+                {status}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Skills grid */}
         {loading ? (
           <SkeletonSkills />
         ) : error ? (
           <ErrorBlock message={error} />
         ) : (
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl">
-            {(skills ?? []).map((skill, i) => {
-              const lvl = getLevel(skill.level);
-              return (
-                <div
-                  key={skill.id}
-                  className={`group transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
-                  style={{ transitionDelay: `${i * 60}ms` }}
-                >
-                  <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-sm font-medium text-white tracking-wide">{skill.name}</span>
-                    <span className="text-[10px] font-mono tracking-widest uppercase text-gray-500">{lvl.label}</span>
-                  </div>
-                  {/* Bar */}
-                  <div className="relative h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${lvl.color} transition-all duration-1000 ease-out`}
-                      style={{ width: inView ? `${lvl.pct}%` : "0%", transitionDelay: `${i * 60 + 200}ms` }}
-                    />
-                    {/* Shimmer */}
-                    <div
-                      className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-1000 ease-out opacity-0 group-hover:opacity-100`}
-                      style={{ width: `${lvl.pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Badge cloud for visual variety */}
-        {!loading && !error && skills && skills.length > 0 && (
-          <div
-            className={`mt-20 transition-all duration-700 delay-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-          >
-            <p className="text-xs font-mono tracking-[0.25em] uppercase text-gray-600 mb-6">Also familiar with</p>
-            <div className="flex flex-wrap gap-3">
-              {skills.slice(0, 12).map((skill) => (
-                <span
-                  key={`badge-${skill.id}`}
-                  className="px-4 py-2 text-xs font-mono tracking-wider text-gray-400 border border-white/8 rounded-full hover:border-amber-400/30 hover:text-amber-400/80 transition-all duration-300 cursor-default"
-                >
-                  {skill.name}
-                </span>
-              ))}
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(skills ?? []).map((skill, i) => (
+              <SkillCard
+                key={skill.id}
+                skill={skill}
+                index={i}
+                inView={inView}
+                adminMode={adminMode}
+                isEditing={editingId === skill.id}
+                editData={editData}
+                onEdit={() => handleEdit(skill)}
+                onSave={() => handleSave(skill.id)}
+                onCancel={handleCancel}
+                onDelete={() => handleDelete(skill.id)}
+                setEditData={setEditData}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -118,17 +179,176 @@ export default function Skills() {
   );
 }
 
+// SkillCard component
+function SkillCard({
+  skill,
+  index,
+  inView,
+  adminMode,
+  isEditing,
+  editData,
+  onEdit,
+  onSave,
+  onCancel,
+  onDelete,
+  setEditData,
+}: {
+  skill: Skill;
+  index: number;
+  inView: boolean;
+  adminMode: boolean;
+  isEditing: boolean;
+  editData: Partial<Skill>;
+  onEdit: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onDelete: () => void;
+  setEditData: (data: Partial<Skill>) => void;
+}) {
+  const current = isEditing ? { ...skill, ...editData } : skill;
+  const tools = current.tools?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
+
+  const handleToolChange = (idx: number, value: string) => {
+    const updatedTools = [...tools];
+    updatedTools[idx] = value;
+    setEditData({ ...editData, tools: updatedTools.filter(Boolean).join(", ") });
+  };
+
+  const handleAddTool = () => {
+    if (tools.length < 10) {
+      setEditData({ ...editData, tools: [...tools, ""].join(", ") });
+    }
+  };
+
+  const handleRemoveTool = (idx: number) => {
+    const updatedTools = tools.filter((_, i) => i !== idx);
+    setEditData({ ...editData, tools: updatedTools.join(", ") });
+  };
+
+  return (
+    <div
+      className={`relative group flex flex-col bg-white/[0.03] border border-white/8 rounded-xl overflow-hidden p-6
+        hover:border-violet-400/25 hover:bg-white/[0.06] transition-all duration-500
+        ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
+      style={{ transitionDelay: `${index * 80}ms` }}
+    >
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      {isEditing ? (
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-mono text-gray-400 uppercase tracking-wider mb-1.5">Icon (emoji)</label>
+            <input
+              className="w-full p-2 rounded-lg border border-white/20 bg-slate-900 text-white text-2xl focus:border-violet-400/50 focus:outline-none"
+              value={current.icon || ""}
+              onChange={(e) => setEditData({ ...editData, icon: e.target.value })}
+              placeholder="🧠"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-mono text-gray-400 uppercase tracking-wider mb-1.5">Skill Name</label>
+            <input
+              className="w-full p-2 rounded-lg border border-white/20 bg-slate-900 text-white font-semibold focus:border-violet-400/50 focus:outline-none"
+              value={current.name || ""}
+              onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+              placeholder="Skill Name"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-mono text-gray-400 uppercase tracking-wider mb-1.5">Description</label>
+            <textarea
+              className="w-full p-2 rounded-lg border border-white/20 bg-slate-900 text-white text-sm focus:border-violet-400/50 focus:outline-none resize-none"
+              value={current.description || ""}
+              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+              placeholder="Skill description..."
+              rows={2}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-mono text-gray-400 uppercase tracking-wider mb-1.5">Tools/Stack (Max 10)</label>
+            <div className="space-y-2">
+              {(() => {
+                const editTools = current.tools?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
+                return editTools.map((tool, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <input
+                      className="flex-1 p-2 rounded-lg border border-white/20 bg-slate-900 text-white text-sm focus:border-violet-400/50 focus:outline-none"
+                      value={tool}
+                      onChange={(e) => handleToolChange(idx, e.target.value)}
+                      placeholder={`Tool ${idx + 1}`}
+                    />
+                    {editTools.length > 1 && (
+                      <button onClick={() => handleRemoveTool(idx)} className="px-2.5 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-sm">
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ));
+              })()}
+              {tools.length < 10 && (
+                <button onClick={handleAddTool} className="w-full py-2 rounded-lg border border-dashed border-violet-500/30 text-violet-400 hover:bg-violet-500/5 text-xs font-medium">
+                  + Add Tool ({tools.length}/10)
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button onClick={onSave} className="flex-1 py-2 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-300 hover:bg-violet-500/20 font-semibold text-sm">
+              Save
+            </button>
+            <button onClick={onCancel} className="flex-1 py-2 rounded-lg bg-gray-500/10 border border-gray-500/30 text-gray-300 hover:bg-gray-500/20 font-semibold text-sm">
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-start justify-between mb-4">
+            <div className="text-4xl">{current.icon || "💡"}</div>
+            {adminMode && (
+              <div className="flex gap-1.5">
+                <button onClick={onEdit} className="px-3 py-1 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-300 hover:bg-violet-500/20 text-xs font-medium">
+                  Edit
+                </button>
+                <button onClick={onDelete} className="px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-xs font-medium">
+                  Del
+                </button>
+              </div>
+            )}
+          </div>
+          <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-violet-300 transition-colors duration-300 mb-2">
+            {current.name}
+          </h3>
+          <p className="text-sm text-gray-400 leading-relaxed font-light mb-4">
+            {current.description}
+          </p>
+          {tools.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {tools.map((tool, idx) => (
+                <span key={idx} className="px-2.5 py-1 text-[10px] font-mono tracking-wider bg-violet-400/10 border border-violet-400/20 text-violet-300 rounded group-hover:border-violet-400/40 transition-all">
+                  {tool}
+                </span>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function SkeletonSkills() {
   return (
-    <div className="grid md:grid-cols-2 gap-6 max-w-4xl animate-pulse">
-      {[...Array(8)].map((_, i) => (
-        <div key={i} className="space-y-2.5">
-          <div className="flex justify-between">
-            <div className="h-3 bg-white/10 rounded w-24" />
-            <div className="h-3 bg-white/10 rounded w-16" />
-          </div>
-          <div className="h-1.5 bg-white/5 rounded-full">
-            <div className="h-1.5 bg-white/10 rounded-full" style={{ width: `${30 + i * 8}%` }} />
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="bg-white/[0.03] border border-white/8 rounded-xl p-6 animate-pulse">
+          <div className="w-12 h-12 bg-white/10 rounded-lg mb-4" />
+          <div className="h-6 bg-white/10 rounded w-3/4 mb-2" />
+          <div className="h-4 bg-white/5 rounded w-full mb-4" />
+          <div className="flex gap-2">
+            <div className="h-6 bg-white/5 rounded w-16" />
+            <div className="h-6 bg-white/5 rounded w-20" />
+            <div className="h-6 bg-white/5 rounded w-16" />
           </div>
         </div>
       ))}

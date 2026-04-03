@@ -2,8 +2,9 @@
 
 const router = require("express").Router();
 const ctrl = require("../controllers/profile.controller");
+const { requireAdminKey } = require("../middleware/adminAuth");
 
 router.get("/", ctrl.getProfile);
-router.post("/", ctrl.createOrUpdateProfile);
+router.post("/", requireAdminKey, ctrl.createOrUpdateProfile);
 
 module.exports = router;

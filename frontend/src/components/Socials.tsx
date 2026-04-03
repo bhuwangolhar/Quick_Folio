@@ -1,9 +1,11 @@
 import { useRef, useEffect, useState } from "react";
+import type { RefObject, ReactNode } from "react";
 import { useFetch } from "../hooks/useFetch";
-import { fetchSocials, fetchProfile } from "../services/api";
+import { fetchSocials, fetchProfile, createSocial, updateSocial, deleteSocial } from "../services/api";
+import type { Social } from "../services/api";
 import { ErrorBlock } from "./Loader";
 
-function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
+function useInView(ref: RefObject<Element>, threshold = 0.15) {
   const [inView, setInView] = useState(false);
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold });
@@ -13,7 +15,7 @@ function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
   return inView;
 }
 
-const PLATFORM_META: Record<string, { icon: JSX.Element; color: string }> = {
+const PLATFORM_META: Record<string, { icon: ReactNode; color: string }> = {
   github: {
     color: "hover:border-white/40 hover:text-white",
     icon: (
@@ -60,11 +62,45 @@ function getPlatformMeta(platform: string) {
   };
 }
 
-export default function Socials() {
+export default function Socials({ adminMode = false }: { adminMode?: boolean }) {
   const { data: socials, loading, error } = useFetch(fetchSocials);
   const { data: profile } = useFetch(fetchProfile);
   const sectionRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef as React.RefObject<Element>);
+
+  const [newSocial, setNewSocial] = useState<Omit<Social, "id">>({ platform: "", url: "" });
+  const [status, setStatus] = useState<string>("");
+  const [editSocials, setEditSocials] = useState<Record<number, Partial<Social>>>({});
+
+  const handleCreate = async () => {
+    try {
+      await createSocial(newSocial);
+      setStatus("Social created.");
+      window.location.reload();
+    } catch (e) {
+      setStatus("Failed to create social.");
+    }
+  };
+
+  const handleUpdate = async (id: number) => {
+    try {
+      await updateSocial(id, editSocials[id]);
+      setStatus("Social updated.");
+      window.location.reload();
+    } catch (e) {
+      setStatus("Failed to update social.");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteSocial(id);
+      setStatus("Social deleted.");
+      window.location.reload();
+    } catch (e) {
+      setStatus("Failed to delete social.");
+    }
+  };
 
   return (
     <section id="socials" className="relative py-32 bg-[#080c14] overflow-hidden">
@@ -95,6 +131,16 @@ export default function Socials() {
             )}
           </div>
 
+          {adminMode && (
+            <div className="mb-6 p-4 border border-dashed border-amber-300/60 rounded">
+              <div className="mb-2 text-sm text-amber-300">Admin: add social</div>
+              <input value={newSocial.platform} onChange={(e) => setNewSocial((s) => ({ ...s, platform: e.target.value }))} placeholder="Platform" className="w-full px-2 py-1 mb-2 rounded border border-white/20 bg-slate-900 text-white" />
+              <input value={newSocial.url} onChange={(e) => setNewSocial((s) => ({ ...s, url: e.target.value }))} placeholder="URL" className="w-full px-2 py-1 mb-2 rounded border border-white/20 bg-slate-900 text-white" />
+              <button onClick={handleCreate} className="px-4 py-2 rounded bg-amber-400 text-black">Add social</button>
+              <div className="text-xs text-cyan-300 mt-1">{status}</div>
+            </div>
+          )}
+
           {/* Social links */}
           {loading ? (
             <div className="flex justify-center gap-4 animate-pulse">
@@ -110,7 +156,28 @@ export default function Socials() {
             >
               {(socials ?? []).map((social, i) => {
                 const meta = getPlatformMeta(social.platform);
-                return (
+                return adminMode ? (
+                  <div
+                    key={social.id}
+                    className={`group flex flex-col items-start gap-2.5 p-4 border border-dashed border-amber-400/40 rounded-xl text-white transition-all duration-300 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+                    style={{ transitionDelay: `${i * 60}ms` }}
+                  >
+                    <input
+                      className="w-full p-2 rounded border border-white/20 bg-slate-900 text-white"
+                      value={editSocials[social.id]?.platform ?? social.platform}
+                      onChange={(e) => setEditSocials((p) => ({ ...p, [social.id]: { ...p[social.id], platform: e.target.value } }))}
+                    />
+                    <input
+                      className="w-full p-2 rounded border border-white/20 bg-slate-900 text-white"
+                      value={editSocials[social.id]?.url ?? social.url}
+                      onChange={(e) => setEditSocials((p) => ({ ...p, [social.id]: { ...p[social.id], url: e.target.value } }))}
+                    />
+                    <div className="flex gap-2 w-full">
+                      <button onClick={() => handleUpdate(social.id)} className="flex-1 py-2 rounded bg-amber-400 text-black">Save</button>
+                      <button onClick={() => handleDelete(social.id)} className="flex-1 py-2 rounded bg-red-500 text-white">Delete</button>
+                    </div>
+                  </div>
+                ) : (
                   <a
                     key={social.id}
                     href={social.url}

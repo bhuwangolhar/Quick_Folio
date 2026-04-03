@@ -4,11 +4,26 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/db");
 
 const Profile = sequelize.define("Profile", {
-  name: DataTypes.STRING,
-  role: DataTypes.STRING,
-  bio: DataTypes.TEXT,
-  avatar: DataTypes.STRING,
-  resume: DataTypes.STRING,
+  name: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  bio: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  avatar: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  resume: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 });
 
 module.exports = Profile;
