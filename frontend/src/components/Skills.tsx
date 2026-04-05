@@ -96,7 +96,7 @@ export default function Skills({ adminMode = false }: { adminMode?: boolean }) {
   };
 
   return (
-    <section id="skills" className="relative py-32 bg-[#060a10] overflow-hidden">
+    <section id="skills" className="relative py-32 bg-[#0a0e17] overflow-hidden">
       {/* BG */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-0 w-[400px] h-[400px] rounded-full bg-violet-500/4 blur-[100px]" />
@@ -119,11 +119,8 @@ export default function Skills({ adminMode = false }: { adminMode?: boolean }) {
             <span className="text-xs font-mono tracking-[0.25em] uppercase text-violet-400">Expertise</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-white">
-            Tools of the trade
+            Skills of the trade
           </h2>
-          <p className="mt-4 text-gray-500 font-light max-w-md">
-            A full-stack AI & business analytics toolkit from research to deployment.
-          </p>
         </div>
 
         {/* Admin controls */}
@@ -209,30 +206,34 @@ function SkillCard({
   const tools = current.tools?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
 
   const handleToolChange = (idx: number, value: string) => {
-    const updatedTools = [...tools];
+    const editTools = current.tools?.split(",").map((t) => t.trim()) ?? [];
+    const updatedTools = [...editTools];
     updatedTools[idx] = value;
     setEditData({ ...editData, tools: updatedTools.filter(Boolean).join(", ") });
   };
 
   const handleAddTool = () => {
-    if (tools.length < 10) {
-      setEditData({ ...editData, tools: [...tools, ""].join(", ") });
+    const editTools = current.tools?.split(",").map((t) => t.trim()) ?? [];
+    if (editTools.length < 10) {
+      const updatedTools = [...editTools, ''];
+      setEditData({ ...editData, tools: updatedTools.join(', ') });
     }
   };
 
   const handleRemoveTool = (idx: number) => {
-    const updatedTools = tools.filter((_, i) => i !== idx);
+    const editTools = current.tools?.split(",").map((t) => t.trim()) ?? [];
+    const updatedTools = editTools.filter((_, i) => i !== idx);
     setEditData({ ...editData, tools: updatedTools.join(", ") });
   };
 
   return (
     <div
-      className={`relative group flex flex-col bg-white/[0.03] border border-white/8 rounded-xl overflow-hidden p-6
-        hover:border-violet-400/25 hover:bg-white/[0.06] transition-all duration-500
+      className={`relative group flex flex-col bg-slate-900/60 border border-cyan-500/20 rounded-xl overflow-hidden p-6
+        hover:border-cyan-500/30 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-500
         ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
       style={{ transitionDelay: `${index * 80}ms` }}
     >
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
       {isEditing ? (
         <div className="space-y-3">
@@ -268,7 +269,7 @@ function SkillCard({
             <label className="block text-xs font-mono text-gray-400 uppercase tracking-wider mb-1.5">Tools/Stack (Max 10)</label>
             <div className="space-y-2">
               {(() => {
-                const editTools = current.tools?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
+                const editTools = current.tools?.split(",").map((t) => t.trim()) ?? [];
                 return editTools.map((tool, idx) => (
                   <div key={idx} className="flex gap-2">
                     <input
@@ -278,18 +279,21 @@ function SkillCard({
                       placeholder={`Tool ${idx + 1}`}
                     />
                     {editTools.length > 1 && (
-                      <button onClick={() => handleRemoveTool(idx)} className="px-2.5 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-sm">
+                      <button type="button" onClick={() => handleRemoveTool(idx)} className="px-2.5 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-sm">
                         ✕
                       </button>
                     )}
                   </div>
                 ));
               })()}
-              {tools.length < 10 && (
-                <button onClick={handleAddTool} className="w-full py-2 rounded-lg border border-dashed border-violet-500/30 text-violet-400 hover:bg-violet-500/5 text-xs font-medium">
-                  + Add Tool ({tools.length}/10)
-                </button>
-              )}
+              {(() => {
+                const editTools = current.tools?.split(",").map((t) => t.trim()) ?? [];
+                return editTools.length < 10 && (
+                  <button type="button" onClick={handleAddTool} className="w-full py-2 rounded-lg border border-dashed border-violet-500/30 text-violet-400 hover:bg-violet-500/5 text-xs font-medium">
+                    + Add Tool ({editTools.length}/10)
+                  </button>
+                );
+              })()}
             </div>
           </div>
           <div className="flex gap-2 pt-2">

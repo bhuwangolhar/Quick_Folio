@@ -19,8 +19,8 @@ export default function Home({ adminMode = false }: HomeProps) {
       <Experience adminMode={adminMode} />
       <Projects adminMode={adminMode} />
       <Skills adminMode={adminMode} />
-      <Certifications adminMode={adminMode} />
       <EducationSection adminMode={adminMode} />
+      <Certifications adminMode={adminMode} />
       <Socials adminMode={adminMode} />
     </main>
   );

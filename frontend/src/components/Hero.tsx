@@ -1,3 +1,5 @@
+// Hero.tsx
+
 import { useEffect, useRef, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { fetchProfile, updateProfile } from "../services/api";
@@ -11,194 +13,262 @@ interface HeroProps {
 export default function Hero({ adminMode = false }: HeroProps) {
   const [editData, setEditData] = useState<Partial<Profile>>({});
   const [status, setStatus] = useState<string>("");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { data: profile, loading, error } = useFetch(fetchProfile);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (profile) {
-      setEditData({ ...profile });
-    }
+    if (profile) setEditData({ ...profile });
   }, [profile]);
 
+  // Animated grid / nexus canvas effect - DISABLED for cleaner look
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.style.opacity = "0";
-    el.style.transform = "translateY(32px)";
-    requestAnimationFrame(() => {
-      el.style.transition = "opacity 0.9s ease, transform 0.9s ease";
-      el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
-    });
-  }, [loading]);
+    return () => {};
+  }, []);
 
   const handleSave = async () => {
     try {
       await updateProfile(editData);
       setStatus("Profile saved.");
       window.location.reload();
-    } catch (e) {
+    } catch {
       setStatus("Save failed.");
     }
   };
 
-
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center overflow-hidden bg-[#080c14]"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      style={{ background: "#000000" }}
     >
-      {/* Background geometry */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Grid */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-            backgroundSize: "60px 60px",
-          }}
-        />
-        {/* Ambient glow */}
-        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full bg-amber-500/5 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-blue-500/5 blur-[100px]" />
-        {/* Decorative lines */}
-        <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-white/5 to-transparent" />
-        <div className="absolute top-0 right-2/3 w-px h-full bg-gradient-to-b from-transparent via-white/3 to-transparent" />
-      </div>
-
-      {/* Floating badge top-right */}
-      <div className="absolute top-32 right-8 md:right-24 hidden md:flex flex-col items-end gap-2 opacity-40">
-        <div className="w-16 h-px bg-amber-400" />
-        <span className="text-[10px] font-mono tracking-[0.3em] uppercase text-amber-400">
-          Available for work
-        </span>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 w-full grid md:grid-cols-2 gap-16 items-center py-32">
-        {/* Text */}
-        <div ref={containerRef}>
-          {loading ? (
-            <SkeletonHero />
-          ) : error ? (
-            <ErrorBlock message={error} />
-          ) : profile ? (
-            <div className="space-y-8">
-              {adminMode ? (
-                <div className="space-y-4 border border-dashed border-amber-400/60 p-4 rounded">
-                  <div className="text-xs font-light tracking-widest uppercase text-amber-300">Edit profile</div>
-                  <input
-                    value={editData.role ?? ""}
-                    placeholder="Role"
-                    onChange={(e) => setEditData((d) => ({ ...d, role: e.target.value }))}
-                    className="w-full p-2 rounded border border-white/20 bg-slate-900 text-white outline-none focus:border-amber-400"
-                  />
-                  <input
-                    value={editData.name ?? ""}
-                    placeholder="Name"
-                    onChange={(e) => setEditData((d) => ({ ...d, name: e.target.value }))}
-                    className="w-full p-2 rounded border border-white/20 bg-slate-900 text-white outline-none focus:border-amber-400"
-                  />
-                  <textarea
-                    value={editData.bio ?? ""}
-                    placeholder="Bio"
-                    rows={3}
-                    onChange={(e) => setEditData((d) => ({ ...d, bio: e.target.value }))}
-                    className="w-full p-2 rounded border border-white/20 bg-slate-900 text-white outline-none focus:border-amber-400"
-                  />
-                  <input
-                    value={editData.avatar ?? ""}
-                    placeholder="Avatar URL"
-                    onChange={(e) => setEditData((d) => ({ ...d, avatar: e.target.value }))}
-                    className="w-full p-2 rounded border border-white/20 bg-slate-900 text-white outline-none focus:border-amber-400"
-                  />
-                  <input
-                    value={editData.resume ?? ""}
-                    placeholder="Resume URL"
-                    onChange={(e) => setEditData((d) => ({ ...d, resume: e.target.value }))}
-                    className="w-full p-2 rounded border border-white/20 bg-slate-900 text-white outline-none focus:border-amber-400"
-                  />
-                  <button onClick={handleSave} className="px-4 py-2 rounded bg-amber-400 text-black font-semibold hover:bg-amber-300">Save profile</button>
-                  <div className="text-xs text-cyan-300">{status}</div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-px bg-amber-400" />
-                    <span className="text-xs font-mono tracking-[0.25em] uppercase text-amber-400">
-                      {profile.role}
-                    </span>
-                  </div>
-
-                  <h1 className="text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight">
-                    <span className="block text-white">{profile.name.split(" ")[0]}</span>
-                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500">
-                      {profile.name.split(" ").slice(1).join(" ")}
-                    </span>
-                  </h1>
-
-                  <p className="text-gray-400 text-lg leading-relaxed max-w-lg font-light">
-                    {profile.bio}
-                  </p>
-                </>
-              )}
-
-              <div className="flex flex-wrap gap-4 pt-2">
-                {profile.resume && (
-                  <a
-                    href={profile.resume}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group relative inline-flex items-center gap-3 px-8 py-4 bg-amber-400 text-black text-sm font-semibold tracking-wider uppercase rounded-none hover:bg-amber-300 transition-colors duration-300 overflow-hidden"
-                  >
-                    <span className="relative z-10">Download Resume</span>
-                    <svg className="w-4 h-4 relative z-10 group-hover:translate-y-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  </a>
-                )}
-                <button
-                  onClick={() => document.querySelector("#projects")?.scrollIntoView({ behavior: "smooth" })}
-                  className="group inline-flex items-center gap-3 px-8 py-4 border border-white/15 text-white text-sm font-light tracking-wider uppercase hover:border-amber-400/50 hover:text-amber-400 transition-all duration-300"
+      {/* Main content */}
+      <div
+        className="relative flex flex-col items-center text-center px-6 w-full max-w-5xl mx-auto py-40"
+        style={{ zIndex: 2 }}
+      >
+        {loading ? (
+          <SkeletonHero />
+        ) : error ? (
+          <ErrorBlock message={error} />
+        ) : profile ? (
+          <>
+            {adminMode ? (
+              <div
+                className="space-y-4 text-left w-full max-w-lg mx-auto p-6 rounded-lg"
+                style={{
+                  border: "1px dashed rgba(0,220,255,0.4)",
+                  background: "rgba(0,220,255,0.04)",
+                }}
+              >
+                <div
+                  className="text-xs font-mono tracking-widest uppercase mb-2"
+                  style={{ color: "#00dcff" }}
                 >
-                  View Work
-                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
+                  Edit Profile
+                </div>
+                {[
+                  { key: "role", placeholder: "Role" },
+                  { key: "name", placeholder: "Name" },
+                  { key: "resume", placeholder: "Resume URL" },
+                ].map(({ key, placeholder }) => (
+                  <input
+                    key={key}
+                    value={(editData as Record<string, string>)[key] ?? ""}
+                    placeholder={placeholder}
+                    onChange={(e) =>
+                      setEditData((d) => ({ ...d, [key]: e.target.value }))
+                    }
+                    className="w-full p-2 rounded text-white outline-none text-sm"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                    }}
+                  />
+                ))}
+                <textarea
+                  value={editData.bio ?? ""}
+                  placeholder="Bio"
+                  rows={3}
+                  onChange={(e) => setEditData((d) => ({ ...d, bio: e.target.value }))}
+                  className="w-full p-2 rounded text-white outline-none text-sm resize-none"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                  }}
+                />
+                <button
+                  onClick={handleSave}
+                  className="px-4 py-2 rounded text-sm font-semibold transition-all"
+                  style={{
+                    background: "#00dcff",
+                    color: "#070b18",
+                  }}
+                >
+                  Save Profile
                 </button>
+                {status && (
+                  <div className="text-xs font-mono" style={{ color: "#00dcff" }}>
+                    {status}
+                  </div>
+                )}
               </div>
-            </div>
-          ) : null}
-        </div>
+            ) : (
+              <div
+                className="flex flex-col items-center gap-8"
+                style={{ animation: "heroFadeUp 1s ease forwards" }}
+              >
+                {/* Role label */}
+                <div className="flex items-center gap-5 mb-4">
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      background: "#00e5a0",
+                      boxShadow: "0 0 8px #00e5a0",
+                    }}
+                  />
+                  <span
+                    className="text-xs font-mono tracking-[0.3em] uppercase"
+                    style={{ color: "#00dcff" }}
+                  >
+                    {profile.role}
+                  </span>
+                </div>
 
-        {/* Avatar */}
-        <div className="hidden md:flex justify-end">
-          {!loading && profile?.avatar && (
-            <div className="relative">
-              {/* Frame decoration */}
-              <div className="absolute -inset-4 border border-amber-400/10 rounded-2xl" />
-              <div className="absolute -inset-8 border border-white/5 rounded-3xl" />
-              <div className="absolute top-0 right-0 w-24 h-24 border-t border-r border-amber-400/30 rounded-tr-2xl" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 border-b border-l border-amber-400/30 rounded-bl-2xl" />
-              <img
-                src={profile.avatar}
-                alt={profile.name}
-                className="relative w-80 h-80 object-cover rounded-xl grayscale hover:grayscale-0 transition-all duration-700"
-              />
-              {/* Overlay shimmer */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-amber-400/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
-            </div>
-          )}
-        </div>
+                {/* Giant name */}
+                <h1
+                  className="font-bold leading-none tracking-tight"
+                  style={{
+                    fontFamily: "'Playfair Display', serif",
+                    fontSize: "clamp(56px, 10vw, 96px)",
+                  }}
+                >
+                  {profile.name.split(" ").map((word, i) => (
+                    <span
+                      key={i}
+                      className="block"
+                      style={
+                        i === 0
+                          ? { color: "#ffffff" }
+                          : {
+                              backgroundImage:
+                                "linear-gradient(90deg, #00dcff 0%, #7b8fff 50%, #ff69b4 100%)",
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
+                              backgroundClip: "text",
+                            }
+                      }
+                    >
+                      {word}
+                    </span>
+                  ))}
+                </h1>
+
+                {/* Decorative divider */}
+                <div className="flex items-center gap-4 w-full max-w-xs justify-center py-4">
+                  <div className="flex-1 h-px" style={{ background: "rgba(0,220,255,0.3)" }} />
+                  <svg width="16" height="16" viewBox="0 0 16 16" style={{ color: "#00dcff" }}>
+                    <path fill="currentColor" d="M8 0L9.5 6.5L16 8L9.5 9.5L8 16L6.5 9.5L0 8L6.5 6.5Z" />
+                  </svg>
+                  <div className="flex-1 h-px" style={{ background: "rgba(0,220,255,0.3)" }} />
+                </div>
+
+                {/* Bio */}
+                <p
+                  className="text-base md:text-lg leading-relaxed max-w-2xl font-light"
+                  style={{ color: "rgba(200,200,200,0.8)" }}
+                >
+                  {profile.bio}
+                </p>
+
+                {/* Buttons */}
+                <div className="flex flex-wrap gap-4 justify-center pt-2">
+                  {profile.resume && (
+                    <a
+                      href={profile.resume}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group inline-flex items-center gap-3 px-8 py-3 text-sm font-bold tracking-widest uppercase transition-all duration-300"
+                      style={{
+                        background: "#00dcff",
+                        color: "#000000",
+                        borderRadius: "25px",
+                        border: "none",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.opacity = "0.9";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.opacity = "1";
+                      }}
+                    >
+                      <span>↓ Download Resume</span>
+                    </a>
+                  )}
+                  <button
+                    onClick={() =>
+                      document
+                        .querySelector("#socials")
+                        ?.scrollIntoView({ behavior: "smooth" })
+                    }
+                    className="inline-flex items-center gap-3 px-8 py-3 text-sm font-bold tracking-widest uppercase transition-all duration-300"
+                    style={{
+                      background: "transparent",
+                      border: "1px solid #ffffff",
+                      color: "#ffffff",
+                      borderRadius: "4px",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#00dcff";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#00dcff";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#ffffff";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#ffffff";
+                    }}
+                  >
+                    Let's Connect →
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : null}
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
-        <div className="w-px h-12 bg-gradient-to-b from-transparent to-amber-400 animate-pulse" />
-        <span className="text-[9px] font-mono tracking-[0.3em] uppercase text-amber-400 rotate-90 translate-y-4">
-          Scroll
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        style={{ zIndex: 2, opacity: 0.4 }}
+      >
+        <div
+          className="w-px h-10"
+          style={{
+            background: "linear-gradient(to bottom, #00dcff, transparent)",
+          }}
+        />
+        <span
+          className="text-[10px] font-mono tracking-[0.3em] uppercase"
+          style={{ color: "#00dcff" }}
+        >
+          Swipe down
         </span>
       </div>
+
+      <style>{`
+        @keyframes heroFadeUp {
+          from { opacity: 0; transform: translateY(28px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes heroPulse {
+          0%, 100% { opacity: 0.4; }
+          50%       { opacity: 1; }
+        }
+        @keyframes nameShimmer {
+          0%   { background-position: 200% center; }
+          100% { background-position: -200% center; }
+        }
+      `}</style>
     </section>
   );
 }

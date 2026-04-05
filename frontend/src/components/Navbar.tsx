@@ -1,7 +1,10 @@
+// Navbar.tsx
+
 import { useState, useEffect } from "react";
 
 const NAV_LINKS = [
-  { label: "Home", href: "#hero" },
+  { label: "About", href: "#about" },
+  { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },
   { label: "Skills", href: "#skills" },
   { label: "Contact", href: "#socials" },
@@ -9,12 +12,10 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [active, setActive] = useState("hero");
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 40);
       const sections = NAV_LINKS.map((l) => l.href.slice(1));
       for (const id of [...sections].reverse()) {
         const el = document.getElementById(id);
@@ -34,77 +35,154 @@ export default function Navbar() {
   };
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "py-3 bg-[#080c14]/90 backdrop-blur-xl border-b border-white/5 shadow-2xl"
-          : "py-6 bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* Logo */}
-        <button
-          onClick={() => scrollTo("#hero")}
-          className="group relative flex items-center gap-2 text-sm font-mono tracking-[0.2em] uppercase text-amber-400 hover:text-amber-300 transition-colors"
+    <>
+      <nav
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          transition: "all 0.4s ease",
+          background: "#000000",
+          borderBottom: "1px solid rgba(0,220,255,0.1)",
+          padding: "16px 0",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            paddingLeft: "40px",
+            paddingRight: "40px",
+          }}
         >
-          <span className="w-6 h-px bg-amber-400 group-hover:w-10 transition-all duration-300" />
-          Portfolio
-        </button>
+          {/* Logo */}
+          <button
+            onClick={() => scrollTo("#hero")}
+            className="group flex items-center flex-shrink-0"
+            style={{ textDecoration: "none" }}
+          >
+            <div
+              className="flex items-center justify-center font-bold"
+              style={{
+                width: "40px",
+                height: "40px",
+                backgroundColor: "#ffffff",
+                color: "#000000",
+                fontFamily: "'DM Mono', monospace",
+                fontSize: "24px",
+                fontWeight: "900",
+                borderRadius: "50%",
+              }}
+            >
+              B
+            </div>
+          </button>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((link) => {
-            const id = link.href.slice(1);
-            return (
-              <button
-                key={id}
-                onClick={() => scrollTo(link.href)}
-                className={`relative text-sm tracking-widest uppercase font-light transition-colors duration-300 group ${
-                  active === id ? "text-amber-400" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                {link.label}
-                <span
-                  className={`absolute -bottom-1 left-0 h-px bg-amber-400 transition-all duration-300 ${
-                    active === id ? "w-full" : "w-0 group-hover:w-full"
-                  }`}
-                />
-              </button>
-            );
-          })}
+          {/* Nav Links on right */}
+          <div className="hidden md:flex items-center gap-12" style={{ marginLeft: "auto" }}>
+            {NAV_LINKS.map((link) => {
+              const id = link.href.slice(1);
+              const isActive = active === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => scrollTo(link.href)}
+                  className="relative text-sm tracking-[0.2em] uppercase font-bold transition-all duration-300"
+                  style={{
+                    color: isActive ? "#00dcff" : "#ffffff",
+                    fontFamily: "'DM Mono', monospace",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px 0",
+                    fontSize: "12px",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive)
+                      (e.currentTarget as HTMLButtonElement).style.color = "#00dcff";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive)
+                      (e.currentTarget as HTMLButtonElement).style.color = "#ffffff";
+                  }}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden flex flex-col justify-center gap-[5px] p-2"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+            style={{ background: "none", border: "none", cursor: "pointer", marginLeft: "auto" }}
+          >
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                style={{
+                  display: "block",
+                  width: "22px",
+                  height: "1px",
+                  background: "#00dcff",
+                  transition: "all 0.3s ease",
+                  transform:
+                    menuOpen && i === 0
+                      ? "rotate(45deg) translate(4px, 4px)"
+                      : menuOpen && i === 2
+                      ? "rotate(-45deg) translate(4px, -4px)"
+                      : "none",
+                  opacity: menuOpen && i === 1 ? 0 : 1,
+                }}
+              />
+            ))}
+          </button>
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-[5px] p-2"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
+        {/* Mobile menu */}
+        <div
+          style={{
+            overflow: "hidden",
+            maxHeight: menuOpen ? "320px" : "0",
+            opacity: menuOpen ? 1 : 0,
+            transition: "all 0.4s ease",
+          }}
         >
-          <span className={`w-6 h-px bg-white transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-[7px]" : ""}`} />
-          <span className={`w-6 h-px bg-white transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
-          <span className={`w-6 h-px bg-white transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-[7px]" : ""}`} />
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      <div className={`md:hidden transition-all duration-500 overflow-hidden ${menuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"}`}>
-        <div className="px-6 pt-4 pb-6 flex flex-col gap-5 bg-[#080c14]/95 backdrop-blur-xl border-t border-white/5">
-          {NAV_LINKS.map((link) => {
-            const id = link.href.slice(1);
-            return (
-              <button
-                key={id}
-                onClick={() => scrollTo(link.href)}
-                className={`text-left text-sm tracking-widest uppercase font-light ${
-                  active === id ? "text-amber-400" : "text-gray-400"
-                }`}
-              >
-                {link.label}
-              </button>
-            );
-          })}
+          <div
+            className="px-6 pt-4 pb-6 flex flex-col gap-5"
+            style={{
+              background: "#000000",
+              borderTop: "1px solid rgba(0,220,255,0.08)",
+            }}
+          >
+            {NAV_LINKS.map((link) => {
+              const id = link.href.slice(1);
+              return (
+                <button
+                  key={id}
+                  onClick={() => scrollTo(link.href)}
+                  className="text-left text-sm tracking-[0.2em] uppercase font-bold transition-all duration-200"
+                  style={{
+                    color: active === id ? "#00dcff" : "#ffffff",
+                    fontFamily: "'DM Mono', monospace",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 }

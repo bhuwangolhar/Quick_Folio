@@ -37,6 +37,7 @@ export interface Profile {
   name: string;
   role: string;
   bio: string;
+  contact_bio: string;
   avatar: string;
   resume: string;
 }
@@ -134,6 +135,7 @@ export interface Certification {
   description: string;
   tools: string; // comma-separated
   credential_url: string;
+  order: number;
 }
 
 export const fetchCertifications = () => api.get<Certification[]>("/certifications").then((r) => r.data);
@@ -147,10 +149,12 @@ export interface Education {
   id: number;
   degree: string;
   institution: string;
+  grade: string;
   location: string;
   duration: string;
   description: string;
   skills: string; // comma-separated
+  order: number;
 }
 
 export const fetchEducation = () => api.get<Education[]>("/education").then((r) => r.data);

@@ -13,6 +13,20 @@ interface ExperienceProps {
   adminMode?: boolean;
 }
 
+const circleGlowStyles = `
+  @keyframes circlePulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4), inset 0 0 0 1px rgba(34, 211, 238, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px 8px rgba(34, 211, 238, 0.6), inset 0 0 0 1px rgba(34, 211, 238, 0.5);
+    }
+  }
+  .circle-glow {
+    animation: circlePulse 3s ease-in-out infinite;
+  }
+`;
+
 export default function ExperienceSection({ adminMode = false }: ExperienceProps) {
   const { data: experiences, loading, error, refetch } = useFetch(fetchExperiences);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -94,6 +108,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
       id="experience"
       className="relative min-h-screen overflow-hidden bg-[#0a0e17] py-32"
     >
+      <style>{circleGlowStyles}</style>
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
         <div
@@ -109,9 +124,9 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
       <div className="max-w-5xl mx-auto px-6 relative">
         {/* Section Header */}
         <div className="flex items-center gap-3 mb-16">
-          <div className="w-8 h-px bg-cyan-400" />
+          <div className="w-16 h-px bg-orange-500" />
           <span className="text-xs font-mono tracking-[0.25em] uppercase text-cyan-400">
-            02 - EXPERIENCE
+            EXPERIENCE
           </span>
         </div>
 
@@ -121,9 +136,6 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
             <br />
             an impact
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl">
-            My professional journey building impactful solutions
-          </p>
         </div>
 
         {/* Admin Add Button */}
@@ -148,22 +160,17 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
         {/* Timeline */}
         <div className="relative">
           {/* Vertical line for timeline */}
-          <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-cyan-500/50 via-cyan-500/30 to-transparent hidden md:block" />
+          <div className="absolute left-[20px] top-0 bottom-0 w-px bg-cyan-500/20 hidden md:block" />
 
           {/* Experience Cards */}
           <div className="space-y-12">
             {experiences?.map((exp, idx) => (
               <div key={exp.id} className="relative">
                 {/* Arrow/Dot indicator */}
-                <div className="absolute -left-2 top-8 w-4 h-4 rounded-full bg-cyan-500 border-4 border-[#0a0e17] z-10 hidden md:block" />
-                
-                {/* Connecting line to next item */}
-                {idx < (experiences?.length || 0) - 1 && (
-                  <div className="absolute left-0 top-16 w-px h-[calc(100%+3rem)] bg-cyan-500/20 hidden md:block" />
-                )}
+                <div className="circle-glow absolute left-[20px] top-1/2 -translate-y-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-cyan-500/90 border border-cyan-500/50 z-20 hidden md:block" />
 
                 {/* Card */}
-                <div className="md:ml-12 group">
+                <div className="md:ml-32 group">
                   {editingId === exp.id && adminMode ? (
                     // Edit Mode
                     <div className="bg-slate-900/50 border-2 border-dashed border-cyan-400 rounded-lg p-6 space-y-4">
@@ -287,7 +294,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
                     </div>
                   ) : (
                     // View Mode
-                    <div className="bg-slate-900/30 border border-cyan-500/10 rounded-lg p-8 hover:border-cyan-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/10">
+                    <div className="bg-slate-900/60 border border-cyan-500/20 rounded-lg p-8 hover:border-cyan-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/10">
                       {/* Date Badge */}
                       <div className="text-xs font-mono tracking-[0.2em] uppercase text-cyan-400 mb-4">
                         {exp.date_range}

@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import type { RefObject, ReactNode } from "react";
 import { useFetch } from "../hooks/useFetch";
-import { fetchSocials, fetchProfile, createSocial, updateSocial, deleteSocial } from "../services/api";
+import { fetchSocials, fetchProfile, createSocial, updateSocial, deleteSocial, updateProfile } from "../services/api";
 import type { Social } from "../services/api";
 import { ErrorBlock } from "./Loader";
 
@@ -48,6 +48,22 @@ const PLATFORM_META: Record<string, { icon: ReactNode; color: string }> = {
       </svg>
     ),
   },
+  phone: {
+    color: "hover:border-green-500/50 hover:text-green-400",
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99C3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+      </svg>
+    ),
+  },
+  email: {
+    color: "hover:border-blue-500/50 hover:text-blue-400",
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+      </svg>
+    ),
+  },
 };
 
 function getPlatformMeta(platform: string) {
@@ -61,7 +77,12 @@ function getPlatformMeta(platform: string) {
     ),
   };
 }
-
+const pulseAnimation = `
+  @keyframes textPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+`;
 export default function Socials({ adminMode = false }: { adminMode?: boolean }) {
   const { data: socials, loading, error } = useFetch(fetchSocials);
   const { data: profile } = useFetch(fetchProfile);
@@ -71,6 +92,7 @@ export default function Socials({ adminMode = false }: { adminMode?: boolean }) 
   const [newSocial, setNewSocial] = useState<Omit<Social, "id">>({ platform: "", url: "" });
   const [status, setStatus] = useState<string>("");
   const [editSocials, setEditSocials] = useState<Record<number, Partial<Social>>>({});
+  const [editBio, setEditBio] = useState<string>("");
 
   const handleCreate = async () => {
     try {
@@ -102,15 +124,27 @@ export default function Socials({ adminMode = false }: { adminMode?: boolean }) 
     }
   };
 
-  return (
-    <section id="socials" className="relative py-32 bg-[#080c14] overflow-hidden">
-      {/* BG */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 w-[600px] h-[300px] -translate-x-1/2 rounded-full bg-amber-500/4 blur-[100px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
-      </div>
+  useEffect(() => {
+    if (profile?.contact_bio) {
+      setEditBio(profile.contact_bio);
+    }
+  }, [profile]);
 
-      <div className="max-w-7xl mx-auto px-6" ref={sectionRef}>
+  const handleBioUpdate = async () => {
+    try {
+      await updateProfile({ contact_bio: editBio });
+      setStatus("Bio updated.");
+      window.location.reload();
+    } catch (e) {
+      setStatus("Failed to update bio.");
+    }
+  };
+
+  return (
+    <section id="socials" className="relative overflow-hidden min-h-screen flex flex-col items-center justify-center pb-4" style={{ background: "#000000" }}>
+      <style>{pulseAnimation}</style>
+
+      <div className="max-w-7xl mx-auto px-6 w-full" ref={sectionRef}>
         <div className="max-w-2xl mx-auto text-center">
           {/* Header */}
           <div
@@ -124,20 +158,37 @@ export default function Socials({ adminMode = false }: { adminMode?: boolean }) 
             <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-white mb-4">
               Let's Talk
             </h2>
-            {profile?.bio && (
-              <p className="text-gray-500 font-light leading-relaxed">
-                I'm always open to new opportunities, collaborations, or just a good conversation about tech.
+            {profile?.contact_bio && (
+              <p className="text-gray-500 font-light leading-relaxed max-w-2xl">
+                {profile.contact_bio.split('\n').map((line, idx) => (
+                  <span key={idx}>
+                    {line}
+                    {idx < profile.contact_bio.split('\n').length - 1 && <br />}
+                  </span>
+                ))}
               </p>
             )}
           </div>
 
           {adminMode && (
             <div className="mb-6 p-4 border border-dashed border-amber-300/60 rounded">
-              <div className="mb-2 text-sm text-amber-300">Admin: add social</div>
+              <div className="mb-2 text-sm text-amber-300">Admin: edit bio</div>
+              <textarea
+                value={editBio}
+                onChange={(e) => setEditBio(e.target.value)}
+                placeholder="Contact section bio text"
+                rows={3}
+                className="w-full px-2 py-1 mb-2 rounded border border-white/20 bg-slate-900 text-white"
+              />
+              <button onClick={handleBioUpdate} className="px-4 py-2 rounded bg-amber-400 text-black mb-4">
+                Update Bio
+              </button>
+              <div className="text-xs text-cyan-300 mb-4">{status}</div>
+
+              <div className="text-sm text-amber-300 mb-2">Add social</div>
               <input value={newSocial.platform} onChange={(e) => setNewSocial((s) => ({ ...s, platform: e.target.value }))} placeholder="Platform" className="w-full px-2 py-1 mb-2 rounded border border-white/20 bg-slate-900 text-white" />
               <input value={newSocial.url} onChange={(e) => setNewSocial((s) => ({ ...s, url: e.target.value }))} placeholder="URL" className="w-full px-2 py-1 mb-2 rounded border border-white/20 bg-slate-900 text-white" />
               <button onClick={handleCreate} className="px-4 py-2 rounded bg-amber-400 text-black">Add social</button>
-              <div className="text-xs text-cyan-300 mt-1">{status}</div>
             </div>
           )}
 
@@ -196,15 +247,21 @@ export default function Socials({ adminMode = false }: { adminMode?: boolean }) 
         </div>
 
         {/* Footer */}
-        <div
-          className={`mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-700 delay-300 ${inView ? "opacity-100" : "opacity-0"}`}
-        >
-          <span className="text-xs font-mono tracking-wider text-gray-600">
+        <div className="mt-16 pt-8 flex flex-col items-center justify-center gap-6">
+          {/* Copyright text - highlighted in white */}
+          <span className="text-sm font-mono tracking-wider text-white text-center drop-shadow-lg">
             © {new Date().getFullYear()} {profile?.name ?? "Portfolio"}. All rights reserved.
           </span>
-          <span className="text-xs font-mono tracking-wider text-gray-700">
-            Built with React + TypeScript
-          </span>
+          
+          {/* Built with text - dim and pulsing at bottom */}
+          <div className="mt-4">
+            <span 
+              className="text-xs font-mono tracking-wider text-amber-400 text-center"
+              style={{ animation: "textPulse 2.5s ease-in-out infinite" }}
+            >
+              Built with React + TypeScript
+            </span>
+          </div>
         </div>
       </div>
     </section>

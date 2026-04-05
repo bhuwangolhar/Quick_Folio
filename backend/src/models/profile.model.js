@@ -16,6 +16,10 @@ const Profile = sequelize.define("Profile", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  contact_bio: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   avatar: {
     type: DataTypes.TEXT,
     allowNull: true,

@@ -226,9 +226,9 @@ export default function About({ adminMode = false }: AboutProps) {
                 <>
                   {/* Section label */}
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-px bg-cyan-400" />
-                    <span className="text-xs font-mono tracking-[0.25em] uppercase text-cyan-400">
-                      {about.section}
+                    <div className="w-16 h-px bg-orange-500" />
+                    <span className="text-sm font-mono tracking-[0.25em] uppercase text-cyan-400">
+                      ME
                     </span>
                   </div>
 
@@ -250,9 +250,9 @@ export default function About({ adminMode = false }: AboutProps) {
 
                     {/* Right: Code preview mockup */}
                     <div className="hidden md:flex items-center justify-center">
-                      <div className="relative w-full max-w-md">
+                      <div className="relative w-full max-w-md group">
                         {/* Terminal window */}
-                        <div className="bg-slate-900/90 rounded-lg border border-cyan-500/20 overflow-hidden shadow-2xl">
+                        <div className="bg-slate-900/90 rounded-lg border border-cyan-500/40 overflow-hidden shadow-2xl hover:border-cyan-500/60 hover:shadow-cyan-500/30 transition-all duration-300">
                           {/* Terminal header */}
                           <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-white/5">
                             <div className="w-3 h-3 rounded-full bg-red-500/70" />
@@ -292,7 +292,7 @@ export default function About({ adminMode = false }: AboutProps) {
                         </div>
 
                         {/* Glow effect */}
-                        <div className="absolute -inset-4 bg-cyan-500/10 blur-2xl -z-10" />
+                        <div className="absolute -inset-4 bg-gradient-to-b from-cyan-500/20 to-cyan-500/5 blur-2xl opacity-0 group-hover:opacity-100 -z-10 transition-opacity duration-300" />
                       </div>
                     </div>
                   </div>
@@ -300,50 +300,54 @@ export default function About({ adminMode = false }: AboutProps) {
                   {/* Stat cards */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
                     {about.stat1_value && (
-                      <div className="group relative bg-slate-900/50 border border-cyan-500/10 rounded-lg p-6 hover:border-cyan-500/30 transition-all duration-300">
+                      <div className="group relative bg-slate-900/60 border border-cyan-500/40 rounded-lg p-6 hover:border-cyan-500/60 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300">
                         <div className="text-3xl md:text-4xl font-bold text-cyan-400 mb-2">
                           {about.stat1_value}
                         </div>
                         <div className="text-xs uppercase tracking-wider text-gray-500 font-light">
                           {about.stat1_label}
                         </div>
-                        <div className="absolute inset-0 bg-cyan-400/5 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-cyan-400/10 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                        <div className="absolute -inset-1 bg-gradient-to-b from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 rounded-lg blur -z-10 transition-opacity duration-300" />
                       </div>
                     )}
 
                     {about.stat2_value && (
-                      <div className="group relative bg-slate-900/50 border border-cyan-500/10 rounded-lg p-6 hover:border-cyan-500/30 transition-all duration-300">
+                      <div className="group relative bg-slate-900/60 border border-cyan-500/40 rounded-lg p-6 hover:border-cyan-500/60 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300">
                         <div className="text-3xl md:text-4xl font-bold text-cyan-400 mb-2">
                           {about.stat2_value}
                         </div>
                         <div className="text-xs uppercase tracking-wider text-gray-500 font-light">
                           {about.stat2_label}
                         </div>
-                        <div className="absolute inset-0 bg-cyan-400/5 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-cyan-400/10 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                        <div className="absolute -inset-1 bg-gradient-to-b from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 rounded-lg blur -z-10 transition-opacity duration-300" />
                       </div>
                     )}
 
                     {about.stat3_value && (
-                      <div className="group relative bg-slate-900/50 border border-cyan-500/10 rounded-lg p-6 hover:border-cyan-500/30 transition-all duration-300">
+                      <div className="group relative bg-slate-900/60 border border-cyan-500/40 rounded-lg p-6 hover:border-cyan-500/60 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300">
                         <div className="text-3xl md:text-4xl font-bold text-cyan-400 mb-2">
                           {about.stat3_value}
                         </div>
                         <div className="text-xs uppercase tracking-wider text-gray-500 font-light">
                           {about.stat3_label}
                         </div>
-                        <div className="absolute inset-0 bg-cyan-400/5 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-cyan-400/10 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                        <div className="absolute -inset-1 bg-gradient-to-b from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 rounded-lg blur -z-10 transition-opacity duration-300" />
                       </div>
                     )}
 
                     {about.stat4_value && (
-                      <div className="group relative bg-slate-900/50 border border-cyan-500/10 rounded-lg p-6 hover:border-cyan-500/30 transition-all duration-300">
+                      <div className="group relative bg-slate-900/60 border border-cyan-500/40 rounded-lg p-6 hover:border-cyan-500/60 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300">
                         <div className="text-3xl md:text-4xl font-bold text-cyan-400 mb-2">
                           {about.stat4_value}
                         </div>
                         <div className="text-xs uppercase tracking-wider text-gray-500 font-light">
                           {about.stat4_label}
                         </div>
-                        <div className="absolute inset-0 bg-cyan-400/5 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-cyan-400/10 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-300" />
+                        <div className="absolute -inset-1 bg-gradient-to-b from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 rounded-lg blur -z-10 transition-opacity duration-300" />
                       </div>
                     )}
                   </div>

@@ -14,6 +14,24 @@ function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
   return inView;
 }
 
+function sortByOrder<T extends { order?: number }>(items: T[]): T[] {
+  const sorted = [...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  
+  // Randomly shuffle items with same order
+  const grouped = new Map<number, T[]>();
+  sorted.forEach(item => {
+    const order = item.order ?? 0;
+    if (!grouped.has(order)) grouped.set(order, []);
+    grouped.get(order)!.push(item);
+  });
+  
+  const result: T[] = [];
+  grouped.forEach(group => {
+    result.push(...group.sort(() => Math.random() - 0.5));
+  });
+  return result;
+}
+
 export default function EducationSection({ adminMode = false }: { adminMode?: boolean }) {
   const { data: education, loading, error } = useFetch(fetchEducation);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -61,10 +79,12 @@ export default function EducationSection({ adminMode = false }: { adminMode?: bo
       const newEdu: Omit<Education, "id"> = {
         degree: "New Degree",
         institution: "University Name",
+        grade: "3.8 GPA",
         location: "City, Country",
         duration: "2020 - 2024",
         description: "Description of your education...",
-        skills: "Skill 1, Skill 2, Skill 3"
+        skills: "",
+        order: 1
       };
       await createEducation(newEdu);
       setStatus("Education added!");
@@ -86,7 +106,7 @@ export default function EducationSection({ adminMode = false }: { adminMode?: bo
   };
 
   return (
-    <section id="education" className="relative py-32 bg-[#060a10] overflow-hidden">
+    <section id="education" className="relative py-32 bg-[#0a0e17] overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-1/3 left-1/4 w-[400px] h-[400px] rounded-full bg-rose-500/4 blur-[100px]" />
         <div
@@ -105,10 +125,7 @@ export default function EducationSection({ adminMode = false }: { adminMode?: bo
             <div className="w-8 h-px bg-rose-400" />
             <span className="text-xs font-mono tracking-[0.25em] uppercase text-rose-400">Academic Background</span>
           </div>
-          <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-white">Education</h2>
-          <p className="mt-4 text-gray-500 font-light max-w-md">
-            My academic journey and qualifications.
-          </p>
+          <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-white">Educational Details</h2>
         </div>
 
         {/* Admin controls */}
@@ -132,10 +149,10 @@ export default function EducationSection({ adminMode = false }: { adminMode?: bo
         ) : (
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-gradient-to-b from-rose-400/50 via-rose-400/20 to-transparent" />
+            <div className="absolute left-[20px] top-0 bottom-0 w-px bg-rose-400/50 hidden md:block" />
 
             <div className="space-y-8">
-              {(education ?? []).map((edu, i) => (
+              {sortByOrder(education ?? []).map((edu, i) => (
                 <EducationCard
                   key={edu.id}
                   edu={edu}
@@ -177,28 +194,18 @@ function EducationCard({
   isLast: boolean;
 }) {
   const current = isEditing ? { ...edu, ...editData } : edu;
-  const skills = current.skills?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
 
   return (
     <div
-      className={`relative pl-16 md:pl-20 transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
+      className={`relative transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
       style={{ transitionDelay: `${index * 100}ms` }}
     >
       {/* Timeline dot */}
-      <div className="absolute left-4 md:left-6 top-6 w-4 h-4 rounded-full bg-rose-400 border-4 border-[#060a10] shadow-lg shadow-rose-400/30 z-10" />
-      
-      {/* Arrow connector */}
-      {!isLast && (
-        <div className="absolute left-[22px] md:left-[30px] top-10 text-rose-400/50">
-          <svg width="12" height="40" viewBox="0 0 12 40" fill="none" className="hidden md:block">
-            <path d="M6 0V35M6 35L1 30M6 35L11 30" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </div>
-      )}
+      <div className="absolute left-[20px] top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-rose-400 border-2 border-rose-400/70 shadow-lg shadow-rose-400/30 z-20 hidden md:block" />
 
       {/* Card */}
-      <div className={`group bg-white/[0.03] border border-white/8 rounded-xl p-6 hover:border-rose-400/25 hover:bg-white/[0.06] transition-all duration-500`}>
-        <div className="absolute top-0 left-16 md:left-20 right-0 h-px bg-gradient-to-r from-rose-400/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className={`group md:ml-12 bg-slate-900/60 border border-cyan-500/20 rounded-xl p-6 hover:border-cyan-500/30 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-500`}>
+        <div className="absolute top-0 left-16 md:left-20 right-0 h-px bg-gradient-to-r from-cyan-400/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {isEditing ? (
           <div className="grid md:grid-cols-2 gap-4">
@@ -209,6 +216,10 @@ function EducationCard({
             <div>
               <label className="block text-xs font-mono text-gray-400 uppercase mb-1.5">Institution</label>
               <input className="w-full p-2 rounded-lg border border-white/20 bg-slate-900 text-white focus:border-rose-400/50 focus:outline-none" value={current.institution || ""} onChange={(e) => setEditData({ ...editData, institution: e.target.value })} placeholder="University Name" />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-gray-400 uppercase mb-1.5">Grade/CGPA</label>
+              <input className="w-full p-2 rounded-lg border border-white/20 bg-slate-900 text-white focus:border-rose-400/50 focus:outline-none" value={current.grade || ""} onChange={(e) => setEditData({ ...editData, grade: e.target.value })} placeholder="3.8 GPA / A+" />
             </div>
             <div>
               <label className="block text-xs font-mono text-gray-400 uppercase mb-1.5">Location</label>
@@ -222,9 +233,13 @@ function EducationCard({
               <label className="block text-xs font-mono text-gray-400 uppercase mb-1.5">Description</label>
               <textarea className="w-full p-2 rounded-lg border border-white/20 bg-slate-900 text-white focus:border-rose-400/50 focus:outline-none resize-none" value={current.description || ""} onChange={(e) => setEditData({ ...editData, description: e.target.value })} placeholder="Description..." rows={2} />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-mono text-gray-400 uppercase mb-1.5">Skills (comma-separated)</label>
-              <input className="w-full p-2 rounded-lg border border-white/20 bg-slate-900 text-white focus:border-rose-400/50 focus:outline-none" value={current.skills || ""} onChange={(e) => setEditData({ ...editData, skills: e.target.value })} placeholder="Python, ML, Research" />
+            <div>
+              <label className="block text-xs font-mono text-gray-400 uppercase mb-1.5">Display Order</label>
+              <select className="w-full p-2 rounded-lg border border-white/20 bg-slate-900 text-white focus:border-rose-400/50 focus:outline-none cursor-pointer" value={current.order || 1} onChange={(e) => setEditData({ ...editData, order: parseInt(e.target.value) })}>
+                {[...Array(9)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1}</option>
+                ))}
+              </select>
             </div>
             <div className="md:col-span-2 flex gap-2">
               <button onClick={onSave} className="flex-1 py-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 font-semibold text-sm">Save</button>
@@ -240,6 +255,12 @@ function EducationCard({
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   <span className="text-rose-400 font-medium">{current.institution}</span>
                   <span className="text-gray-600">•</span>
+                  {current.grade && (
+                    <>
+                      <span className="text-gray-500 text-sm">{current.grade}</span>
+                      <span className="text-gray-600">•</span>
+                    </>
+                  )}
                   <span className="text-gray-400 flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -264,17 +285,6 @@ function EducationCard({
 
             {/* Description */}
             <p className="text-sm text-gray-400 mb-4">{current.description}</p>
-
-            {/* Skills */}
-            {skills.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill, idx) => (
-                  <span key={idx} className="px-2.5 py-1 text-[10px] font-mono bg-rose-400/10 border border-rose-400/20 text-rose-300 rounded-full group-hover:border-rose-400/40 transition-all">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         )}
       </div>

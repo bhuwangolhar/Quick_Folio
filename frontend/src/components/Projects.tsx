@@ -14,6 +14,53 @@ function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
   return inView;
 }
 
+// Technology icon mapping
+const getTechIcon = (tech: string): string => {
+  const techLower = tech.toLowerCase().trim();
+  const iconMap: { [key: string]: string } = {
+    react: "⚛️",
+    typescript: "TS",
+    javascript: "JS",
+    node: "⬢",
+    "node.js": "⬢",
+    express: "🚆",
+    mongodb: "🍃",
+    postgresql: "🐘",
+    mysql: "🗄️",
+    python: "🐍",
+    django: "🦸",
+    flask: "🧪",
+    java: "☕",
+    spring: "🌱",
+    vue: "💚",
+    angular: "🅰️",
+    nextjs: "▲",
+    "next.js": "▲",
+    tailwind: "🎨",
+    graphql: "◆",
+    webpack: "📦",
+    docker: "🐳",
+    kubernetes: "⸖",
+    aws: "☁️",
+    git: "📚",
+    github: "🐙",
+    html: "📄",
+    css: "🎨",
+    sql: "📊",
+  };
+  return iconMap[techLower] || "⚙️";
+};
+
+// Technology related images
+const getTechImage = (index: number): string => {
+  const images = [
+    "https://images.unsplash.com/photo-1639322537228-f710d846310a?w=800&h=450&fit=crop%22", // React/Frontend
+    "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=450&fit=crop", // Backend
+    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=450&fit=crop", // Technology
+  ];
+  return images[index % images.length];
+};
+
 export default function Projects({ adminMode = false }: { adminMode?: boolean }) {
   const { data: projects, loading, error } = useFetch(fetchProjects);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -88,7 +135,7 @@ export default function Projects({ adminMode = false }: { adminMode?: boolean })
   };
 
   return (
-    <section id="projects" className="relative py-32 bg-[#080c14] overflow-hidden">
+    <section id="projects" className="relative py-32 bg-[#0a0e17] overflow-hidden">
       {/* BG accents */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[300px] rounded-full bg-amber-500/4 blur-[100px]" />
@@ -108,14 +155,11 @@ export default function Projects({ adminMode = false }: { adminMode?: boolean })
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="w-8 h-px bg-amber-400" />
-            <span className="text-xs font-mono tracking-[0.25em] uppercase text-amber-400">Selected Work</span>
+            <span className="text-xs font-mono tracking-[0.25em] uppercase text-amber-400">Projects</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-white">
-            Projects
+            What I've built so far
           </h2>
-          <p className="mt-4 text-gray-500 font-light max-w-md">
-            A curated selection of work that reflects my approach to building software.
-          </p>
         </div>
 
         {/* Admin controls */}
@@ -210,7 +254,9 @@ function ProjectCard({
 
   const handleAddTech = () => {
     if (techs.length < 5) {
-      setEditData({ ...editData, techStack: [...techs, ""].join(", ") });
+      const currentTechs = editData.techStack || '';
+      const newTechs = currentTechs ? currentTechs + ', ' : '';
+      setEditData({ ...editData, techStack: newTechs });
     }
   };
 
@@ -221,13 +267,13 @@ function ProjectCard({
 
   return (
     <div
-      className={`relative group flex flex-col bg-white/[0.03] border border-white/8 rounded-xl overflow-hidden
-        hover:border-amber-400/25 hover:bg-white/[0.06] transition-all duration-500
+      className={`relative group flex flex-col bg-slate-900/60 border border-cyan-500/20 rounded-xl overflow-hidden
+        hover:border-cyan-500/30 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-500
         ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
       style={{ transitionDelay: `${index * 80}ms` }}
     >
       {/* Top accent */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
       {/* Media Section */}
       <div className="w-full">
@@ -242,9 +288,12 @@ function ProjectCard({
                 />
               ) : (
                 <img
-                  src={current.media_url || "https://via.placeholder.com/800x450/1a1a2e/888?text=No+Image"}
+                  src={current.media_url || getTechImage(index)}
                   alt={current.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = getTechImage(index);
+                  }}
                 />
               )}
             </div>
@@ -306,6 +355,18 @@ function ProjectCard({
                   onChange={(e) => setEditData({ ...editData, media_url: e.target.value })}
                   placeholder="https://example.com/image.jpg"
                 />
+                {current.media_url && current.media_type === "image" && (
+                  <div className="mt-2 w-full h-24 rounded-lg overflow-hidden border border-amber-400/20">
+                    <img
+                      src={current.media_url}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getTechImage(index);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Tech Stack - Multi-input */}
@@ -324,6 +385,7 @@ function ProjectCard({
                         />
                         {editTechs.length > 1 && (
                           <button
+                            type="button"
                             onClick={() => handleRemoveTech(idx)}
                             className="px-2.5 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-colors text-sm"
                           >
@@ -335,6 +397,7 @@ function ProjectCard({
                   })()}
                   {techs.length < 5 && (
                     <button
+                      type="button"
                       onClick={handleAddTech}
                       className="w-full py-2 rounded-lg border border-dashed border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/5 transition-colors text-xs font-medium"
                     >
@@ -385,35 +448,50 @@ function ProjectCard({
           ) : (
             <>
               {/* View mode */}
-              <div className="flex items-start justify-between mb-2">
-                <span className="text-xs font-mono text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/20">
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <h3 className="text-lg font-bold text-white tracking-tight group-hover:text-amber-300 transition-colors duration-300">
+                  {current.title}
+                </h3>
+                <span className="text-xs font-mono text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/20 flex-shrink-0">
                   {current.year || "2024"}
                 </span>
-                {adminMode && (
-                  <div className="flex gap-1.5">
-                    <button
-                      onClick={onEdit}
-                      className="px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 transition-all text-xs font-medium"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={onDelete}
-                      className="px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all text-xs font-medium"
-                    >
-                      Del
-                    </button>
-                  </div>
-                )}
               </div>
 
-              <h3 className="text-lg font-bold text-white tracking-tight group-hover:text-amber-300 transition-colors duration-300 mb-2">
-                {current.title}
-              </h3>
+              {adminMode && (
+                <div className="flex gap-1.5 mb-2">
+                  <button
+                    onClick={onEdit}
+                    className="px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 transition-all text-xs font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={onDelete}
+                    className="px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all text-xs font-medium"
+                  >
+                    Del
+                  </button>
+                </div>
+              )}
 
-              <p className="text-sm text-gray-400 leading-relaxed font-light mb-3 flex-1 line-clamp-3">
+              <p className="text-sm text-gray-400 leading-relaxed font-light mb-3 flex-1 line-clamp-10">
                 {current.description}
               </p>
+
+              {/* Tech stack icons */}
+              {techs.length > 0 && (
+                <div className="flex gap-3 mb-4 py-3 border-t border-b border-cyan-500/10">
+                  {techs.slice(0, 3).map((tech, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-col items-center justify-center w-12 h-12 bg-cyan-500/5 border border-cyan-500/20 rounded-lg hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all duration-300"
+                      title={tech}
+                    >
+                      <span className="text-lg">{getTechIcon(tech)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Tech stack pills */}
               {techs.length > 0 && (
