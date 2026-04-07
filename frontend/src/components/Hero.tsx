@@ -13,7 +13,6 @@ interface HeroProps {
 export default function Hero({ adminMode = false }: HeroProps) {
   const [editData, setEditData] = useState<Partial<Profile>>({});
   const [status, setStatus] = useState<string>("");
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { data: profile, loading, error } = useFetch(fetchProfile);
 

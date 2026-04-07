@@ -21,11 +21,6 @@ const LEVEL_CONFIG: Record<string, { pct: number; label: string; color: string }
   expert:       { pct: 100, label: "Expert",        color: "from-amber-400 to-yellow-300" },
 };
 
-function getLevel(level: string) {
-  const key = level?.toLowerCase().trim() as keyof typeof LEVEL_CONFIG;
-  return LEVEL_CONFIG[key] ?? { pct: 50, label: level, color: "from-gray-500 to-gray-400" };
-}
-
 export default function Skills({ adminMode = false }: { adminMode?: boolean }) {
   const { data: skills, loading, error } = useFetch(fetchSkills);
   const sectionRef = useRef<HTMLDivElement>(null);

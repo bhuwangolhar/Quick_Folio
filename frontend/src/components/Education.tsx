@@ -178,7 +178,7 @@ export default function EducationSection({ adminMode = false }: { adminMode?: bo
 }
 
 function EducationCard({
-  edu, index, inView, adminMode, isEditing, editData, onEdit, onSave, onCancel, onDelete, setEditData, isLast
+  edu, index, inView, adminMode, isEditing, editData, onEdit, onSave, onCancel, onDelete, setEditData
 }: {
   edu: Education;
   index: number;

@@ -28,7 +28,7 @@ const circleGlowStyles = `
 `;
 
 export default function ExperienceSection({ adminMode = false }: ExperienceProps) {
-  const { data: experiences, loading, error, refetch } = useFetch(fetchExperiences);
+  const { data: experiences, loading, error } = useFetch(fetchExperiences);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editData, setEditData] = useState<Partial<Experience>>({});
   const [status, setStatus] = useState<string>("");
@@ -159,7 +159,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
 
           {/* Experience Cards */}
           <div className="space-y-12">
-            {experiences?.map((exp, idx) => (
+            {experiences?.map((exp) => (
               <div key={exp.id} className="relative">
                 {/* Arrow/Dot indicator */}
                 <div className="circle-glow absolute left-[20px] top-1/2 -translate-y-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-cyan-500/90 border border-cyan-500/50 z-20 hidden md:block" />
