@@ -75,6 +75,8 @@ export default function Navbar() {
                 fontSize: "24px",
                 fontWeight: "900",
                 borderRadius: "50%",
+                outline: "3px solid #ffff00",
+                outlineOffset: "2px",
               }}
             >
               B

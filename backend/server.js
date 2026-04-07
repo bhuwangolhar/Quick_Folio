@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const sequelize = require("./config/db");
+const { requireAdminKey } = require("./src/middleware/adminAuth");
 
 // 🔥 Import ALL models (important for Sequelize sync)
 require("./src/models");
@@ -23,13 +24,33 @@ const isProduction = process.env.NODE_ENV === "production";
 // 🔹 Middlewares
 // Configure CORS for production - allow specific origins
 const corsOptions = {
-  origin: isProduction
-    ? process.env.FRONTEND_URL || true // Set FRONTEND_URL in production
-    : true, // Allow all origins in development
+  origin: (origin, callback) => {
+    // Allow all localhost:* ports during development
+    if (!isProduction) {
+      if (!origin || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all in development
+      }
+    } else {
+      // In production, only allow specific FRONTEND_URL
+      const allowedOrigin = process.env.FRONTEND_URL || "https://example.com";
+      if (origin === allowedOrigin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    }
+  },
   credentials: true,
 };
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// 🔹 Admin validation endpoint (returns true/false without exposing key)
+app.post("/api/admin/validate", requireAdminKey, (req, res) => {
+  res.status(200).json({ valid: true, message: "Admin access granted" });
+});
 
 // 🔹 API Routes
 app.use("/api/profile", profileRoutes);

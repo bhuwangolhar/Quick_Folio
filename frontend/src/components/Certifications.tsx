@@ -245,12 +245,11 @@ function CertCard({
           
           {/* Middle: Content */}
           <div className="flex-1">
-            {/* Top row: Name and Year */}
-            <div className="flex items-center justify-between gap-4 mb-1">
-              <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">{current.name}</h3>
-              <span className="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full flex-shrink-0">{current.year}</span>
+            <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors mb-1">{current.name}</h3>
+            <div className="flex items-center gap-3 mb-2">
+              <p className="text-sm text-gray-400">{current.provider}</p>
+              <span className="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">{current.year}</span>
             </div>
-            <p className="text-sm text-gray-400 mb-2">{current.provider}</p>
             <p className="text-sm text-gray-500 mb-3">{current.description}</p>
             {tools.length > 0 && (
               <div className="flex flex-wrap gap-1.5">

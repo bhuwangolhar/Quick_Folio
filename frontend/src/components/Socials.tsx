@@ -77,6 +77,25 @@ function getPlatformMeta(platform: string) {
     ),
   };
 }
+
+function formatSocialUrl(platform: string, url: string): string {
+  const key = platform.toLowerCase().trim();
+  
+  // For WhatsApp/Phone: convert to wa.me link
+  if (key === 'phone' || key === 'whatsapp') {
+    // Remove all non-digit characters and leading +
+    const phoneNumber = url.replace(/\D/g, '');
+    return `https://wa.me/${phoneNumber}`;
+  }
+  
+  // For Email: convert to mailto link
+  if (key === 'email') {
+    return `mailto:${url}`;
+  }
+  
+  // For other platforms, return the URL as-is
+  return url;
+}
 const pulseAnimation = `
   @keyframes textPulse {
     0%, 100% { opacity: 0.3; }
@@ -186,8 +205,13 @@ export default function Socials({ adminMode = false }: { adminMode?: boolean }) 
               <div className="text-xs text-cyan-300 mb-4">{status}</div>
 
               <div className="text-sm text-amber-300 mb-2">Add social</div>
+              <div className="text-xs text-gray-400 mb-3 bg-slate-900/50 p-2 rounded">
+                Platform examples: github, linkedin, twitter, instagram, email, phone, whatsapp<br/>
+                For phone/whatsapp: use phone number (e.g., "1234567890" or "+1-234-567-8910")<br/>
+                For email: use email address (e.g., "user@example.com")
+              </div>
               <input value={newSocial.platform} onChange={(e) => setNewSocial((s) => ({ ...s, platform: e.target.value }))} placeholder="Platform" className="w-full px-2 py-1 mb-2 rounded border border-white/20 bg-slate-900 text-white" />
-              <input value={newSocial.url} onChange={(e) => setNewSocial((s) => ({ ...s, url: e.target.value }))} placeholder="URL" className="w-full px-2 py-1 mb-2 rounded border border-white/20 bg-slate-900 text-white" />
+              <input value={newSocial.url} onChange={(e) => setNewSocial((s) => ({ ...s, url: e.target.value }))} placeholder="URL / Phone / Email" className="w-full px-2 py-1 mb-2 rounded border border-white/20 bg-slate-900 text-white" />
               <button onClick={handleCreate} className="px-4 py-2 rounded bg-amber-400 text-black">Add social</button>
             </div>
           )}
@@ -231,7 +255,7 @@ export default function Socials({ adminMode = false }: { adminMode?: boolean }) 
                 ) : (
                   <a
                     key={social.id}
-                    href={social.url}
+                    href={formatSocialUrl(social.platform, social.url)}
                     target="_blank"
                     rel="noreferrer"
                     className={`group flex flex-col items-center gap-2.5 p-5 w-24 border border-white/8 rounded-xl text-gray-500 transition-all duration-300 ${meta.color} hover:bg-white/4 hover:scale-105`}
