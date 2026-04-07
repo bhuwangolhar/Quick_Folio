@@ -42,8 +42,7 @@ exports.getAllExperiences = async (req, res) => {
     
     res.json(experiences);
   } catch (err) {
-    console.error("Get experiences error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to fetch experiences" });
   }
 };
 
@@ -52,8 +51,7 @@ exports.createExperience = async (req, res) => {
     const experience = await Experience.create(req.body);
     res.json(experience);
   } catch (err) {
-    console.error("Create experience error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to create experience" });
   }
 };
 
@@ -67,30 +65,23 @@ exports.updateExperience = async (req, res) => {
     await experience.update(req.body);
     res.json(experience);
   } catch (err) {
-    console.error("Update experience error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to update experience" });
   }
 };
 
 exports.deleteExperience = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("Delete request for experience ID:", id);
-    console.log("Admin key from query:", req.query.admin_key);
-    console.log("Admin key from header:", req.headers["x-admin-key"]);
     
     const experience = await Experience.findByPk(id);
     if (!experience) {
-      console.log("Experience not found:", id);
       return res.status(404).json({ error: "Experience not found" });
     }
     
     await experience.destroy();
-    console.log("Experience deleted successfully:", id);
     res.json({ message: "Experience deleted" });
   } catch (err) {
-    console.error("Delete experience error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to delete experience" });
   }
 };
 
@@ -133,7 +124,6 @@ exports.resetExperiences = async (req, res) => {
     const experiences = await Experience.bulkCreate(defaults);
     res.json({ message: "Experiences reset to defaults", experiences });
   } catch (err) {
-    console.error("Reset experiences error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to reset experiences" });
   }
 };

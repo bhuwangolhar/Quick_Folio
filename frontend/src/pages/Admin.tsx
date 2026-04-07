@@ -15,7 +15,7 @@ import {
 import type { Project, Profile, Skill, Social } from "../services/api";
 import { useFetch } from "../hooks/useFetch";
 
-const ADMIN_KEY = "quickfolio-admin-secret";
+// Admin key is passed via URL query param and validated server-side
 const QUERY_KEY = new URLSearchParams(window.location.search).get("admin_key");
 
 export default function Admin() {
@@ -42,18 +42,18 @@ export default function Admin() {
     }
   }, [profile]);
 
-  if (QUERY_KEY !== ADMIN_KEY) {
+  // Server validates the key - if no key provided, show unauthorized
+  if (!QUERY_KEY) {
     return (
       <div className="p-8 text-center">
         <h1 className="text-3xl font-bold mb-4">Unauthorized</h1>
-        <p>Please open using the secret link: <code>/?admin_key={ADMIN_KEY}</code></p>
+        <p>Admin access requires authentication.</p>
       </div>
     );
   }
 
   const handleProfileSave = async () => {
     try {
-      console.log("Saving profile:", profileForm);
       await updateProfile(profileForm);
       setStatus("Profile saved successfully.");
       setTimeout(() => window.location.reload(), 1000);
@@ -61,8 +61,6 @@ export default function Admin() {
       const errorMsg = error?.response?.data?.error || error?.response?.data?.message || error?.message || "Unknown error";
       const details = error?.response?.data?.details || "";
       setStatus(`Profile save failed: ${errorMsg}${details ? " - " + details : ""}`);
-      console.error("Profile save error:", error);
-      console.error("Error response:", error?.response);
     }
   };
 
@@ -74,7 +72,6 @@ export default function Admin() {
     } catch (error: any) {
       const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
       setStatus(`Failed to add project: ${errorMsg}`);
-      console.error("Create project error:", error);
     }
   };
 
@@ -96,7 +93,6 @@ export default function Admin() {
     } catch (error: any) {
       const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
       setStatus(`Failed to add skill: ${errorMsg}`);
-      console.error("Create skill error:", error);
     }
   };
 
@@ -118,7 +114,6 @@ export default function Admin() {
     } catch (error: any) {
       const errorMsg = error?.response?.data?.message || error?.message || "Unknown error";
       setStatus(`Failed to add social: ${errorMsg}`);
-      console.error("Create social error:", error);
     }
   };
 
@@ -138,8 +133,6 @@ export default function Admin() {
         <h1 className="text-3xl font-bold">Admin edit</h1>
         <a href="/" className="text-sm text-cyan-300">Go to public view</a>
       </div>
-
-      <p className="text-xs text-cyan-200">Secret edit URL: <code>{window.location.origin}/?admin_key={ADMIN_KEY}</code></p>
 
       <div className="space-y-6">
         <section className="border border-slate-700 p-4 rounded">

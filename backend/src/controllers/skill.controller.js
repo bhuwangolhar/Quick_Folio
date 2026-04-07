@@ -155,7 +155,6 @@ exports.resetSkills = async (req, res) => {
     const skills = await Skill.bulkCreate(defaults);
     res.json({ message: "Skills reset to 6 defaults", skills });
   } catch (error) {
-    console.error("Reset skills error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to reset skills" });
   }
 };

@@ -36,15 +36,13 @@ exports.getAbout = async (req, res) => {
     
     res.json(about);
   } catch (err) {
-    console.error("Get about error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to fetch about" });
   }
 };
 
 exports.createOrUpdateAbout = async (req, res) => {
   try {
     const data = req.body;
-    console.log("Updating about with:", data);
     
     let about = await About.findOne();
     if (about) {
@@ -54,7 +52,6 @@ exports.createOrUpdateAbout = async (req, res) => {
     }
     res.json(about);
   } catch (err) {
-    console.error("About update error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to update about" });
   }
 };

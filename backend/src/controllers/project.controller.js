@@ -80,8 +80,6 @@ exports.updateProject = async (req, res) => {
 
 exports.deleteProject = async (req, res) => {
   try {
-    console.log("Delete project request - ID:", req.params.id, "Admin key:", req.query.admin_key || req.headers['x-admin-key']);
-    
     const deleted = await Project.destroy({
       where: { id: req.params.id },
     });
@@ -92,8 +90,7 @@ exports.deleteProject = async (req, res) => {
 
     res.json({ message: "Project deleted" });
   } catch (error) {
-    console.error("Project delete error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to delete project" });
   }
 };
 
@@ -142,7 +139,6 @@ exports.resetProjects = async (req, res) => {
     const projects = await Project.bulkCreate(defaults);
     res.json({ message: "Projects reset to 3 defaults", projects });
   } catch (error) {
-    console.error("Reset projects error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to reset projects" });
   }
 };

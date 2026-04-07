@@ -1,33 +1,30 @@
 import axios from "axios";
 
-const ADMIN_KEY = "quickfolio-admin-secret";
+// Use environment variable for API URL (falls back to relative path for same-origin deployment)
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   timeout: 10000,
 });
 
-// Add admin key to requests when present in URL
+// Add admin key to requests when present in URL (key is passed through, not hardcoded)
 api.interceptors.request.use((config) => {
   const queryKey = new URLSearchParams(window.location.search).get("admin_key");
-  if (queryKey === ADMIN_KEY) {
-    config.params = { ...config.params, admin_key: ADMIN_KEY };
-    console.log("Admin key added to request:", config.url);
+  if (queryKey) {
+    config.params = { ...config.params, admin_key: queryKey };
   }
   return config;
 });
 
-// Add response error logging
+// Silent error handling in production
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API Error:", {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      data: error.response?.data,
-      params: error.config?.params,
-    });
+    // Only log errors in development
+    if (import.meta.env.DEV) {
+      console.error("API Error:", error.response?.status);
+    }
     return Promise.reject(error);
   }
 );

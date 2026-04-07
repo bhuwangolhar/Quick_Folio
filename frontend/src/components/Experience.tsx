@@ -33,10 +33,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
   const [editData, setEditData] = useState<Partial<Experience>>({});
   const [status, setStatus] = useState<string>("");
 
-  console.log("Experience component - adminMode:", adminMode, "editingId:", editingId);
-
   const handleEdit = (exp: Experience) => {
-    console.log("Edit clicked for experience:", exp.id, exp);
     setEditingId(exp.id);
     setEditData({ ...exp });
   };
@@ -56,13 +53,11 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this experience?")) return;
     try {
-      console.log("Attempting to delete experience ID:", id);
       await deleteExperience(id);
       setStatus("Deleted!");
       refetch();
       setTimeout(() => setStatus(""), 2000);
     } catch (e: any) {
-      console.error("Delete error:", e);
       const errorMsg = e.response?.data?.message || e.message || "Delete failed.";
       setStatus(`Delete failed: ${errorMsg}`);
       setTimeout(() => setStatus(""), 4000);

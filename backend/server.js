@@ -18,9 +18,17 @@ const certificationRoutes = require("./src/routes/certification.routes");
 const educationRoutes = require("./src/routes/education.routes");
 
 const app = express();
+const isProduction = process.env.NODE_ENV === "production";
 
 // 🔹 Middlewares
-app.use(cors());
+// Configure CORS for production - allow specific origins
+const corsOptions = {
+  origin: isProduction
+    ? process.env.FRONTEND_URL || true // Set FRONTEND_URL in production
+    : true, // Allow all origins in development
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // 🔹 API Routes
@@ -33,10 +41,10 @@ app.use("/api/experiences", experienceRoutes);
 app.use("/api/certifications", certificationRoutes);
 app.use("/api/education", educationRoutes);
 
-// 🔹 Health check route (important for production mindset)
+// 🔹 Health check route (important for production)
 app.get("/", (req, res) => {
   res.status(200).json({
-    message: "Portfolio API running 🚀",
+    message: "Portfolio API running",
     status: "OK",
   });
 });
@@ -46,21 +54,20 @@ const startServer = async () => {
   try {
     // DB connection
     await sequelize.authenticate();
-    console.log("✅ Database connected");
+    console.log("✅ Database connected successfully");
 
-    // Sync models
-    await sequelize.sync({ alter: true });
-    console.log("🚀 Database synced");
+    // Schema managed by migrations - no auto-sync to preserve data integrity
+    console.log("🔒 Schema managed by Sequelize migrations");
 
     const PORT = process.env.PORT || 5000;
 
     app.listen(PORT, () => {
-      console.log(`🔥 Server running on http://localhost:${PORT}`);
+      console.log(`🔥 Server running on port ${PORT}`);
     });
 
   } catch (error) {
-    console.error("❌ Server startup error:", error);
-    process.exit(1); // exit if DB fails (pro move)
+    console.error("❌ Server startup error:", error.message);
+    process.exit(1);
   }
 };
 
