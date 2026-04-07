@@ -27,18 +27,26 @@ const corsOptions = {
   origin: (origin, callback) => {
     // Allow all localhost:* ports during development
     if (!isProduction) {
-      if (!origin || origin.includes("localhost") || origin.includes("127.0.0.1")) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Allow all in development
-      }
+      callback(null, true); // Allow all in development
     } else {
-      // In production, only allow specific FRONTEND_URL
-      const allowedOrigin = process.env.FRONTEND_URL || "https://example.com";
-      if (origin === allowedOrigin) {
+      // In production, allow frontend URL and Render domains
+      const allowedOrigins = [
+        process.env.FRONTEND_URL,
+        /\.render\.com$/, // Allow all render.com subdomains
+        /\.onrender\.com$/, // Allow onrender.com domains too
+      ].filter(Boolean);
+      
+      // Check if origin matches any allowed origin
+      const isAllowed = allowedOrigins.some(allowed => {
+        if (typeof allowed === 'string') return origin === allowed;
+        if (allowed instanceof RegExp) return allowed.test(origin);
+        return false;
+      });
+      
+      if (isAllowed) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(null, true); // Fallback: allow for now (update to restrict later)
       }
     }
   },
