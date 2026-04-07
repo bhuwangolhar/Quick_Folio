@@ -43,8 +43,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
       await updateExperience(id, editData);
       setStatus("Saved!");
       setEditingId(null);
-      refetch();
-      setTimeout(() => setStatus(""), 2000);
+      window.location.reload();
     } catch (e) {
       setStatus("Save failed.");
     }
@@ -55,12 +54,10 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
     try {
       await deleteExperience(id);
       setStatus("Deleted!");
-      refetch();
-      setTimeout(() => setStatus(""), 2000);
+      window.location.reload();
     } catch (e: any) {
       const errorMsg = e.response?.data?.message || e.message || "Delete failed.";
       setStatus(`Delete failed: ${errorMsg}`);
-      setTimeout(() => setStatus(""), 4000);
     }
   };
 
@@ -76,8 +73,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
         order: experiences?.length || 0,
       });
       setStatus("Added!");
-      refetch();
-      setTimeout(() => setStatus(""), 2000);
+      window.location.reload();
     } catch (e) {
       setStatus("Add failed.");
     }
@@ -88,8 +84,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
     try {
       await resetExperiences();
       setStatus("Reset to defaults!");
-      refetch();
-      setTimeout(() => setStatus(""), 2000);
+      window.location.reload();
     } catch (e) {
       setStatus("Reset failed.");
     }

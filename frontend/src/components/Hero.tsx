@@ -1,6 +1,6 @@
 // Hero.tsx
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { fetchProfile, updateProfile } from "../services/api";
 import type { Profile } from "../services/api";

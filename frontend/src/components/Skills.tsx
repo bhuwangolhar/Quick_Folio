@@ -14,13 +14,6 @@ function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
   return inView;
 }
 
-const LEVEL_CONFIG: Record<string, { pct: number; label: string; color: string }> = {
-  beginner:     { pct: 30,  label: "Beginner",     color: "from-sky-500 to-sky-400" },
-  intermediate: { pct: 60,  label: "Intermediate",  color: "from-violet-500 to-violet-400" },
-  advanced:     { pct: 85,  label: "Advanced",      color: "from-amber-500 to-amber-400" },
-  expert:       { pct: 100, label: "Expert",        color: "from-amber-400 to-yellow-300" },
-};
-
 export default function Skills({ adminMode = false }: { adminMode?: boolean }) {
   const { data: skills, loading, error } = useFetch(fetchSkills);
   const sectionRef = useRef<HTMLDivElement>(null);
