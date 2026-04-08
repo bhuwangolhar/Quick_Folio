@@ -21,22 +21,40 @@ const educationRoutes = require("./src/routes/education.routes");
 const app = express();
 
 // 🔹 Middlewares
-// Configure CORS - explicit origin whitelist
+// Configure CORS - allow specific origins + no-origin requests
 app.use(cors({
-  origin: [
-    "https://www.bhuvangolhar.space",
-    "https://bhuvangolhar.space",
-    "http://localhost:3000",
-    "http://localhost:5173"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  origin: function (origin, callback) {
+    const allowed = [
+      "https://www.bhuvangolhar.space",
+      "https://bhuvangolhar.space",
+      "http://localhost:3000",
+      "http://localhost:5173"
+    ];
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
+app.options("*", cors());
 app.use(express.json());
 
-// 🔹 Admin validation endpoint (returns true/false without exposing key)
-app.post("/api/admin/validate", requireAdminKey, (req, res) => {
-  res.status(200).json({ valid: true, message: "Admin access granted" });
+// 🔹 Admin validation endpoint (MUST NOT use requireAdminKey middleware)
+app.get("/api/admin/validate", (req, res) => {
+  console.log("Admin validation request received");
+  const key = req.query.admin_key;
+  const ADMIN_SECRET = process.env.ADMIN_KEY || "dev-admin-key-change-me";
+  
+  if (key === ADMIN_SECRET) {
+    console.log("✅ Admin validation successful");
+    return res.status(200).json({ valid: true, message: "Admin access granted" });
+  }
+  
+  console.warn("⚠️ Admin validation failed - invalid key");
+  return res.status(403).json({ valid: false, message: "Invalid admin key" });
 });
 
 // 🔹 API Routes
