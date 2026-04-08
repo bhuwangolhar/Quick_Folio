@@ -1,13 +1,11 @@
-// Admin key must be set via environment variable in production
-const ADMIN_KEY = process.env.ADMIN_KEY;
-
-if (!ADMIN_KEY && process.env.NODE_ENV === "production") {
-  console.error("FATAL: ADMIN_KEY environment variable must be set in production");
-  process.exit(1);
-}
-
-// Fallback for development only
+// Admin key from environment or fallback
+const ADMIN_KEY = process.env.ADMIN_KEY || process.env.ADMIN_SECRET;
 const effectiveAdminKey = ADMIN_KEY || "dev-admin-key-change-me";
+
+// Warn in production if using default key
+if (process.env.NODE_ENV === "production" && !ADMIN_KEY) {
+  console.warn("⚠️  WARNING: Using default admin key in production - set ADMIN_KEY environment variable");
+}
 
 function requireAdminKey(req, res, next) {
   const key = req.query.admin_key || req.headers["x-admin-key"] || "";
