@@ -5,6 +5,7 @@ import ErrorPage from "./components/ErrorPage";
 import ServerWarmupLoader from "./components/ServerWarmupLoader";
 import { useState, useEffect } from "react";
 import { fetchProfile } from "./services/api";
+import { fetchWithRetry } from "./utils/fetchWithRetry";
 
 function App() {
   // 🔒 ROUTE GUARD: Block any path that's not "/"
@@ -30,35 +31,63 @@ function App() {
     const preloadBackend = async () => {
       const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
       try {
-        await fetch(`${apiBaseUrl}/profile`, { signal: AbortSignal.timeout(30000) });
+        await fetchWithRetry(
+          () => fetch(`${apiBaseUrl}/profile`, { signal: AbortSignal.timeout(5000) }),
+          3,
+          1000
+        );
       } catch {
-        // Silent fail - will retry on main fetch
+        // Silent fail - main fetch will retry anyway
       }
     };
     preloadBackend();
   }, []);
 
-  // Load essential data with retry logic
+  // Load essential data with retry logic (NO immediate error)
   useEffect(() => {
+    let isMounted = true;
+    let timeout: ReturnType<typeof setTimeout>;
+
     const loadEssentialData = async () => {
       try {
         await fetchProfile();
-        setIsServerReady(true);
+        if (isMounted) {
+          setIsServerReady(true);
+        }
       } catch {
-        setServerError(true);
-        setIsServerReady(true);
+        // Don't show error immediately - let it stay in loading
+        if (isMounted) {
+          setIsServerReady(true);
+          setServerError(true);
+        }
       }
     };
 
+    // Start loading attempt
     loadEssentialData();
+
+    // Timeout: Only show error after 90 seconds if still loading
+    timeout = setTimeout(() => {
+      if (isMounted && !isServerReady) {
+        setIsServerReady(true);
+        setServerError(true);
+      }
+    }, 90000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     const validateAdminKey = async () => {
       const queryKey = new URLSearchParams(window.location.search).get("admin_key");
       
       if (!queryKey) {
-        setAdminValidated(true);
+        if (isMounted) setAdminValidated(true);
         return;
       }
 
@@ -67,31 +96,44 @@ function App() {
         const url = `${apiBaseUrl}/admin/validate?admin_key=${encodeURIComponent(queryKey)}`;
         console.log("🔐 Validating admin key...", url);
         
-        const response = await fetch(url, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
+        const response = await fetchWithRetry(
+          () =>
+            fetch(url, {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+            }),
+          5,
+          2000
+        );
 
         console.log("✅ Validation response status:", response.status);
 
         if (response.ok) {
           console.log("🎉 Admin access granted!");
-          setAdminMode(true);
-          setAdminValidated(true);
+          if (isMounted) {
+            setAdminMode(true);
+            setAdminValidated(true);
+          }
         } else if (response.status === 403) {
           console.error("❌ Invalid admin key");
-          setAdminError("Invalid admin key. Access denied. Please check your URL.");
-          setAdminValidated(true);
+          if (isMounted) {
+            setAdminError("Invalid admin key. Access denied. Please check your URL.");
+            setAdminValidated(true);
+          }
         } else {
           console.error("❌ Unexpected response:", response.status);
-          setAdminError(`Validation failed (${response.status}). Is the backend running?`);
-          setAdminValidated(true);
+          if (isMounted) {
+            setAdminError(`Validation failed (${response.status}). Is the backend running?`);
+            setAdminValidated(true);
+          }
         }
       } catch (error) {
         console.error("🔥 Admin validation error:", error);
-        setAdminError("⚠️ Could not reach backend. Is the server running? Check console for details.");
-        setAdminValidated(true);
+        if (isMounted) {
+          setAdminError("⚠️ Could not reach backend. Please try again in a moment.");
+          setAdminValidated(true);
+        }
       }
     };
 
@@ -99,6 +141,10 @@ function App() {
     if (isServerReady) {
       validateAdminKey();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [isServerReady]);
 
   // Show loading screen while server is waking up

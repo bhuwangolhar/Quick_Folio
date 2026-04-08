@@ -1,14 +1,14 @@
 /**
- * Retry wrapper for async functions
+ * Retry wrapper for async functions with exponential backoff
  * @param fn - Async function to retry
- * @param retries - Number of retries (default 5)
- * @param delay - Delay between retries in ms (default 2000)
+ * @param retries - Number of retries (default 10)
+ * @param delay - Initial delay between retries in ms (default 3000)
  * @returns Result of the function or throws if all retries fail
  */
 export async function fetchWithRetry<T>(
   fn: () => Promise<T>,
-  retries = 5,
-  delay = 2000
+  retries = 10,
+  delay = 3000
 ): Promise<T> {
   try {
     return await fn();

@@ -29,8 +29,8 @@ api.interceptors.response.use(
 
     // Get current retry count
     const retryCount = retryConfig.get(config) || 0;
-    const maxRetries = 5;
-    const retryDelay = 2000;
+    const maxRetries = 10;
+    const retryDelay = 3000;
 
     // Retry on network errors or 5xx server errors
     const shouldRetry =
