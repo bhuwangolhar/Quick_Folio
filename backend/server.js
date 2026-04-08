@@ -19,40 +19,19 @@ const certificationRoutes = require("./src/routes/certification.routes");
 const educationRoutes = require("./src/routes/education.routes");
 
 const app = express();
-const isProduction = process.env.NODE_ENV === "production";
 
 // 🔹 Middlewares
-// Configure CORS for production - allow specific origins
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow all localhost:* ports during development
-    if (!isProduction) {
-      callback(null, true); // Allow all in development
-    } else {
-      // In production, allow frontend URL and Render domains
-      const allowedOrigins = [
-        process.env.FRONTEND_URL,
-        /\.render\.com$/, // Allow all render.com subdomains
-        /\.onrender\.com$/, // Allow onrender.com domains too
-      ].filter(Boolean);
-      
-      // Check if origin matches any allowed origin
-      const isAllowed = allowedOrigins.some(allowed => {
-        if (typeof allowed === 'string') return origin === allowed;
-        if (allowed instanceof RegExp) return allowed.test(origin);
-        return false;
-      });
-      
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Fallback: allow for now (update to restrict later)
-      }
-    }
-  },
-  credentials: true,
-};
-app.use(cors(corsOptions));
+// Configure CORS - explicit origin whitelist
+app.use(cors({
+  origin: [
+    "https://www.bhuvangolhar.space",
+    "https://bhuvangolhar.space",
+    "http://localhost:3000",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json());
 
 // 🔹 Admin validation endpoint (returns true/false without exposing key)
