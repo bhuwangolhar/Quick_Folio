@@ -1,12 +1,15 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 // Use environment variable for API URL (dev fallback to localhost only)
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 15000,
 });
+
+// Track retry attempts per request
+const retryConfig = new WeakMap<any, number>();
 
 // Add admin key to requests when present in URL (key is passed through, not hardcoded)
 api.interceptors.request.use((config) => {
@@ -17,14 +20,39 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Silent error handling in production
+// Auto-retry failed requests (for backend warmup)
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error: AxiosError) => {
+    const config = error.config;
+    if (!config) return Promise.reject(error);
+
+    // Get current retry count
+    const retryCount = retryConfig.get(config) || 0;
+    const maxRetries = 5;
+    const retryDelay = 2000;
+
+    // Retry on network errors or 5xx server errors
+    const shouldRetry =
+      (error.code === "ECONNABORTED" ||
+        error.code === "ENOTFOUND" ||
+        error.code === "ECONNREFUSED" ||
+        error.response?.status === 503 ||
+        error.response?.status === 502 ||
+        error.response?.status === 500) &&
+      retryCount < maxRetries;
+
+    if (shouldRetry) {
+      retryConfig.set(config, retryCount + 1);
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      return api(config);
+    }
+
     // Only log errors in development
     if (import.meta.env.DEV) {
-      console.error("API Error:", error.response?.status);
+      console.error("API Error:", error.response?.status, error.message);
     }
+
     return Promise.reject(error);
   }
 );

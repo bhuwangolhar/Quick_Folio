@@ -2,7 +2,9 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import ErrorPage from "./components/ErrorPage";
+import ServerWarmupLoader from "./components/ServerWarmupLoader";
 import { useState, useEffect } from "react";
+import { fetchProfile } from "./services/api";
 
 function App() {
   // 🔒 ROUTE GUARD: Block any path that's not "/"
@@ -20,6 +22,36 @@ function App() {
   const [adminMode, setAdminMode] = useState(false);
   const [adminValidated, setAdminValidated] = useState(false);
   const [adminError, setAdminError] = useState("");
+  const [isServerReady, setIsServerReady] = useState(false);
+  const [serverError, setServerError] = useState(false);
+
+  // Preload backend to wake it up ASAP
+  useEffect(() => {
+    const preloadBackend = async () => {
+      const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      try {
+        await fetch(`${apiBaseUrl}/profile`, { signal: AbortSignal.timeout(30000) });
+      } catch {
+        // Silent fail - will retry on main fetch
+      }
+    };
+    preloadBackend();
+  }, []);
+
+  // Load essential data with retry logic
+  useEffect(() => {
+    const loadEssentialData = async () => {
+      try {
+        await fetchProfile();
+        setIsServerReady(true);
+      } catch {
+        setServerError(true);
+        setIsServerReady(true);
+      }
+    };
+
+    loadEssentialData();
+  }, []);
 
   useEffect(() => {
     const validateAdminKey = async () => {
@@ -31,15 +63,13 @@ function App() {
       }
 
       try {
-        // 🔒 Use environment variable for API URL to prevent hardcoded backend URLs
-        const apiBaseUrl = import.meta.env.VITE_API_URL || "/api";
+        const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
         const url = `${apiBaseUrl}/admin/validate?admin_key=${encodeURIComponent(queryKey)}`;
         console.log("🔐 Validating admin key...", url);
         
         const response = await fetch(url, {
-          method: "POST",
+          method: "GET",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
           credentials: "include",
         });
 
@@ -49,7 +79,7 @@ function App() {
           console.log("🎉 Admin access granted!");
           setAdminMode(true);
           setAdminValidated(true);
-        } else if (response.status === 401) {
+        } else if (response.status === 403) {
           console.error("❌ Invalid admin key");
           setAdminError("Invalid admin key. Access denied. Please check your URL.");
           setAdminValidated(true);
@@ -65,8 +95,16 @@ function App() {
       }
     };
 
-    validateAdminKey();
-  }, []);
+    // Wait for server to be ready before validating admin key
+    if (isServerReady) {
+      validateAdminKey();
+    }
+  }, [isServerReady]);
+
+  // Show loading screen while server is waking up
+  if (!isServerReady) {
+    return <ServerWarmupLoader isLoading={!isServerReady} />;
+  }
 
   if (!adminValidated) {
     return (
@@ -84,6 +122,16 @@ function App() {
       <ErrorPage
         title="Access Denied"
         message={adminError}
+        isDev={import.meta.env.DEV}
+      />
+    );
+  }
+
+  if (serverError && !adminMode) {
+    return (
+      <ErrorPage
+        title="Server Unavailable"
+        message="Server is taking longer than expected. Please refresh the page in a moment."
         isDev={import.meta.env.DEV}
       />
     );
