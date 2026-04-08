@@ -66,6 +66,11 @@ app.use("/api/experiences", experienceRoutes);
 app.use("/api/certifications", certificationRoutes);
 app.use("/api/education", educationRoutes);
 
+// 🔹 Lightweight health check for monitoring
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // 🔹 Health check route (important for production)
 app.get("/", (req, res) => {
   res.status(200).json({
