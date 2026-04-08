@@ -1,9 +1,22 @@
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
+import ErrorPage from "./components/ErrorPage";
 import { useState, useEffect } from "react";
 
 function App() {
+  // 🔒 ROUTE GUARD: Block any path that's not "/"
+  const isValidPath = window.location.pathname === "/";
+  if (!isValidPath) {
+    return (
+      <ErrorPage
+        title="Access Denied"
+        message="Invalid route. Only the root path (/) is accessible."
+        isDev={import.meta.env.DEV}
+      />
+    );
+  }
+
   const [adminMode, setAdminMode] = useState(false);
   const [adminValidated, setAdminValidated] = useState(false);
   const [adminError, setAdminError] = useState("");
@@ -18,8 +31,9 @@ function App() {
       }
 
       try {
-        // Include admin_key in the query string for the validation endpoint
-        const url = `/api/admin/validate?admin_key=${encodeURIComponent(queryKey)}`;
+        // 🔒 Use environment variable for API URL to prevent hardcoded backend URLs
+        const apiBaseUrl = import.meta.env.VITE_API_URL || "/api";
+        const url = `${apiBaseUrl}/admin/validate?admin_key=${encodeURIComponent(queryKey)}`;
         console.log("🔐 Validating admin key...", url);
         
         const response = await fetch(url, {
@@ -67,24 +81,11 @@ function App() {
 
   if (adminError) {
     return (
-      <div className="bg-[#080c14] text-white min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-lg p-6">
-          <h1 className="text-4xl font-bold mb-4">🚫 Access Denied</h1>
-          <p className="text-xl text-red-400 mb-6">{adminError}</p>
-          <p className="text-gray-400 mb-4">
-            Make sure:
-            <br/>• Backend server is running (port 5000)
-            <br/>• Admin key in URL matches ADMIN_KEY in .env
-            <br/>• Check browser console (F12) for more details
-          </p>
-          <button
-            onClick={() => window.location.href = "/"}
-            className="px-6 py-2 bg-amber-400 text-black font-bold rounded hover:bg-amber-300 transition"
-          >
-            Go Home
-          </button>
-        </div>
-      </div>
+      <ErrorPage
+        title="Access Denied"
+        message={adminError}
+        isDev={import.meta.env.DEV}
+      />
     );
   }
 
