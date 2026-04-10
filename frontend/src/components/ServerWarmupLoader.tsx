@@ -151,7 +151,7 @@ export default function ServerWarmupLoader({ isLoading }: ServerWarmupLoaderProp
       {/* Server warmup indicator at the bottom */}
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-center">
         <p className="text-xs text-gray-500 font-mono">
-          Loading portfolio data... {elapsedSeconds}s
+          Getting almost ready... {elapsedSeconds}s
         </p>
       </div>
     </div>

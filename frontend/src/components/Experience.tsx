@@ -371,7 +371,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
                                 href={exp.view}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-cyan-400 text-sm hover:text-cyan-300 underline"
+                                className="text-cyan-400 text-sm hover:text-cyan-300"
                               >
                                 View
                               </a>
