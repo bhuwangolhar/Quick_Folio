@@ -21,7 +21,7 @@ export default function ErrorPage({
         <h1 className="text-3xl font-bold mb-4">{title}</h1>
 
         {/* Message */}
-        <p className="text-xl text-red-400 mb-6">{message}</p>
+        <p className="text-xl text-white mb-6">{message}</p>
 
         {/* Developer Mode Info */}
         {isDev && (
@@ -39,7 +39,7 @@ export default function ErrorPage({
           onClick={handleRefresh}
           className="px-6 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg"
         >
-          Refresh 🔄
+          Reload
         </button>
       </div>
     </div>

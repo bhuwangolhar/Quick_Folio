@@ -203,8 +203,8 @@ function App() {
   if (serverError && !adminMode) {
     return (
       <ErrorPage
-        title="Connecting the servers ..."
-        message="Thank you for your patience! Please just wait a moment while we’re preparing for your smooth experience."
+        title="Couldn't connect to the server 🔄"
+        message="Thank you for your patience! Please wait a moment while we’re preparing your experience..."
         isDev={import.meta.env.DEV}
       />
     );
