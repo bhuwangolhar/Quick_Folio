@@ -7,6 +7,7 @@ const Experience = sequelize.define("Experience", {
   role: { type: DataTypes.STRING(200), allowNull: false },
   company: { type: DataTypes.STRING(200) },
   location: { type: DataTypes.STRING(100) },
+  view: { type: DataTypes.STRING(500) },
   tech_stack: { type: DataTypes.TEXT },
   description: { type: DataTypes.TEXT },
   order: { type: DataTypes.INTEGER, defaultValue: 0 },

@@ -140,6 +140,7 @@ export interface Experience {
   role: string;
   company: string;
   location: string;
+  view: string;
   tech_stack: string;
   description: string;
   order: number;

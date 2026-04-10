@@ -68,6 +68,7 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
         role: "New Role",
         company: "Company Name",
         location: "Location",
+        view: "",
         tech_stack: "Tech1, Tech2, Tech3",
         description: "▸ Responsibility 1\n▸ Responsibility 2\n▸ Responsibility 3",
         order: experiences?.length || 0,
@@ -196,8 +197,14 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
                         }
                         className="w-full p-2 rounded border border-white/20 bg-slate-900 text-gray-500 text-sm outline-none focus:border-cyan-400"
                       />
-                      
-                      {/* Tech Stack - Multiple inputs (max 5) */}
+                      <input
+                        value={editData.view ?? ""}
+                        placeholder="View Link (optional URL)"
+                        onChange={(e) =>
+                          setEditData((d) => ({ ...d, view: e.target.value }))
+                        }
+                        className="w-full p-2 rounded border border-white/20 bg-slate-900 text-gray-500 text-sm outline-none focus:border-cyan-400"
+                      />
                       <div className="space-y-2">
                         <label className="text-cyan-400 text-sm font-semibold">Tech Stack (Max 5)</label>
                         {(() => {
@@ -301,6 +308,19 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
                             <>
                               <span className="text-gray-600">•</span>
                               <p className="text-gray-500 text-sm">{exp.location}</p>
+                            </>
+                          )}
+                          {exp.view && (
+                            <>
+                              <span className="text-gray-600">•</span>
+                              <a
+                                href={exp.view}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-cyan-400 text-sm hover:text-cyan-300 underline"
+                              >
+                                View
+                              </a>
                             </>
                           )}
                         </div>
