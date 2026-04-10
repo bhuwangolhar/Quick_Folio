@@ -176,8 +176,8 @@ function App() {
   if (serverError && !adminMode) {
     return (
       <ErrorPage
-        title="Server Unavailable"
-        message="Server is taking longer than expected. Please refresh the page in a moment."
+        title="Connecting the servers ..."
+        message="Thank you for your patience! Please just wait a moment while we’re preparing for your smooth experience."
         isDev={import.meta.env.DEV}
       />
     );

@@ -12,7 +12,6 @@ export default function ErrorPage({
   return (
     <div className="bg-[#080c14] text-white min-h-screen flex items-center justify-center">
       <div className="text-center max-w-lg p-6">
-        <h1 className="text-4xl font-bold mb-4">🚫 {title}</h1>
         <p className="text-xl text-red-400 mb-6">{message}</p>
 
         {isDev && (
@@ -27,9 +26,9 @@ export default function ErrorPage({
 
         <button
           onClick={() => (window.location.href = "/")}
-          className="px-6 py-2 bg-amber-400 text-black font-bold rounded hover:bg-amber-300 transition"
+          className="px-6 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg"
         >
-          Go Home
+          Refresh 🔄
         </button>
       </div>
     </div>
