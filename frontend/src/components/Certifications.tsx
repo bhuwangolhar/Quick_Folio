@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { fetchCertifications, createCertification, updateCertification, deleteCertification, resetCertifications } from "../services/api";
 import type { Certification } from "../services/api";
-import { ErrorBlock } from "./Loader";
+import { SkeletonCerts, ErrorBlock } from "./Loader";
 
 function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
   const [inView, setInView] = useState(false);

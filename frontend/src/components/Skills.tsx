@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { fetchSkills, createSkill, updateSkill, deleteSkill, resetSkills } from "../services/api";
 import type { Skill } from "../services/api";
-import { ErrorBlock } from "./Loader";
+import { SkeletonSkills, ErrorBlock } from "./Loader";
 
 function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
   const [inView, setInView] = useState(false);

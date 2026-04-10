@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { fetchEducation, createEducation, updateEducation, deleteEducation, resetEducation } from "../services/api";
 import type { Education } from "../services/api";
-import { ErrorBlock } from "./Loader";
+import { SkeletonEducation, ErrorBlock } from "./Loader";
 
 function useInView(ref: React.RefObject<Element>, threshold = 0.15) {
   const [inView, setInView] = useState(false);

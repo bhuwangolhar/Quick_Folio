@@ -3,7 +3,7 @@ import type { RefObject, ReactNode } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { fetchSocials, fetchProfile, createSocial, updateSocial, deleteSocial, updateProfile } from "../services/api";
 import type { Social } from "../services/api";
-import { ErrorBlock } from "./Loader";
+import { SkeletonSocials, ErrorBlock } from "./Loader";
 
 function useInView(ref: RefObject<Element>, threshold = 0.15) {
   const [inView, setInView] = useState(false);
@@ -218,11 +218,7 @@ export default function Socials({ adminMode = false }: { adminMode?: boolean }) 
 
           {/* Social links */}
           {loading ? (
-            <div className="flex justify-center gap-4 animate-pulse">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="w-14 h-14 rounded-xl bg-white/5" />
-              ))}
-            </div>
+            <SkeletonSocials />
           ) : error ? (
             <ErrorBlock message={error} />
           ) : (

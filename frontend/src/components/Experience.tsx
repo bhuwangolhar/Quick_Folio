@@ -8,6 +8,7 @@ import {
   resetExperiences,
 } from "../services/api";
 import type { Experience } from "../services/api";
+import { SkeletonExperienceCard, ErrorBlock } from "./Loader";
 
 interface ExperienceProps {
   adminMode?: boolean;
@@ -91,8 +92,61 @@ export default function ExperienceSection({ adminMode = false }: ExperienceProps
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0e17] flex items-center justify-center text-white">Loading experiences...</div>;
-  if (error) return <div className="min-h-screen bg-[#0a0e17] flex items-center justify-center text-red-400">{error}</div>;
+  if (loading) {
+    return (
+      <section
+        id="experience"
+        className="relative min-h-screen overflow-hidden bg-[#0a0e17] py-32"
+      >
+        <style>{circleGlowStyles}</style>
+        {/* Background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+              backgroundSize: "60px 60px",
+            }}
+          />
+          <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[120px]" />
+        </div>
+
+        <div className="max-w-5xl mx-auto px-6 relative">
+          {/* Section Header */}
+          <div className="flex items-center gap-3 mb-16">
+            <div className="w-16 h-px bg-orange-500" />
+            <span className="text-xs font-mono tracking-[0.25em] uppercase text-cyan-400">
+              EXPERIENCE
+            </span>
+          </div>
+
+          <div className="mb-12">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">
+              Where I've made
+              <br />
+              an impact
+            </h2>
+          </div>
+
+          {/* Skeleton cards */}
+          <div className="relative">
+            <div className="absolute left-[20px] top-0 bottom-0 w-px bg-cyan-500/20 hidden md:block" />
+            <div className="space-y-12">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="relative">
+                  <div className="hidden md:block absolute left-[20px] top-1/2 -translate-y-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-cyan-500/90 border border-cyan-500/50 z-20" />
+                  <div className="md:ml-32">
+                    <SkeletonExperienceCard />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (error) return <ErrorBlock message={error} />;
 
   return (
     <section
