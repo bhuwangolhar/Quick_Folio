@@ -292,26 +292,4 @@ function EducationCard({
   );
 }
 
-function SkeletonEducation() {
-  return (
-    <div className="relative">
-      <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-white/10" />
-      <div className="space-y-8">
-        {[...Array(2)].map((_, i) => (
-          <div key={i} className="relative pl-16 md:pl-20">
-            <div className="absolute left-4 md:left-6 top-6 w-4 h-4 rounded-full bg-white/10" />
-            <div className="bg-white/[0.03] border border-white/8 rounded-xl p-6 animate-pulse">
-              <div className="h-6 bg-white/10 rounded w-1/2 mb-2" />
-              <div className="h-4 bg-white/5 rounded w-1/3 mb-4" />
-              <div className="h-4 bg-white/5 rounded w-3/4 mb-3" />
-              <div className="flex gap-2">
-                <div className="h-6 bg-white/5 rounded w-16" />
-                <div className="h-6 bg-white/5 rounded w-20" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+

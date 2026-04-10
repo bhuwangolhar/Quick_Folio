@@ -282,21 +282,4 @@ function CertCard({
   );
 }
 
-function SkeletonCerts() {
-  return (
-    <div className="space-y-4">
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="bg-white/[0.03] border border-white/8 rounded-xl p-6 animate-pulse">
-          <div className="flex gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-lg" />
-            <div className="flex-1">
-              <div className="h-5 bg-white/10 rounded w-1/3 mb-2" />
-              <div className="h-4 bg-white/5 rounded w-1/4 mb-2" />
-              <div className="h-4 bg-white/5 rounded w-3/4" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+
